@@ -1,0 +1,142 @@
+@startuml
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor #1f2937
+}
+
+left to right direction
+
+rectangle "CONTROLLER" as CONTROLLER {
+  [AuthController]
+  [HomeController]
+  [ProductController]
+  [CartController]
+  [OrderController]
+  [OrderStatusController]
+  [ProfileController]
+  [ReviewController]
+  [ReportController]
+  [PromotionController]
+  [CustomerController]
+  [AdminProductController]
+  [AdminOrderController]
+  [AdminDashboardController]
+  [AdminCustomerController]
+  [Auth\ForgotPasswordController]
+  [Auth\ForgotPasswordOtpController]
+  [Auth\ResetPasswordController]
+}
+note left of CONTROLLER
+  Controllers (names taken exactly from code)
+end note
+
+rectangle "VIEW" as VIEW {
+  [layouts.app]
+  [home]
+  [products.index]
+  [product_detail]
+  [cart]
+  [cart.checkout]
+  [orders.index]
+  [orders.show]
+  [orders.waiting]
+  [order_status.index]
+  [profile.edit]
+  [admin.layout]
+  [admin.dashboard]
+  [admin.products.index]
+  [admin.products.create]
+  [admin.products.edit]
+  [admin.orders.index]
+  [admin.orders.show]
+  [admin.customers.index]
+  [admin.customers.show]
+  [admin.customers.order-history]
+  [admin.reports.sales]
+  [admin.reports.products]
+  [admin.reports.customers]
+  [auth.login]
+  [auth.register]
+  [auth.forgot-password]
+  [auth.reset-password]
+  [auth.forgot-password-otp-email]
+}
+note right of VIEW
+  Views (Blade templates) - exact names from resources/views
+end note
+
+rectangle "MODEL" as MODEL {
+  [User]
+  [Product]
+  [Cart]
+  [CartItem]
+  [Order]
+  [OrderItem]
+  [Payment]
+  [Review]
+  [OrderLog]
+}
+note bottom of MODEL
+  Models - exact names from app/Models
+end note
+
+' arrows from controllers to models
+[AuthController] --> [User]
+[HomeController] --> [Product]
+[ProductController] --> [Product]
+[CartController] --> [Cart]
+[CartController] --> [CartItem]
+[CartController] --> [Product]
+[OrderController] --> [Order]
+[OrderController] --> [OrderItem]
+[OrderController] --> [Payment]
+[OrderStatusController] --> [Order]
+[ProfileController] --> [User]
+[ReviewController] --> [Review]
+[AdminProductController] --> [Product]
+[AdminOrderController] --> [Order]
+[AdminDashboardController] --> [Order]
+[AdminCustomerController] --> [User]
+[ReportController] --> [Order]
+[PromotionController] --> [Promotion]
+[CustomerController] --> [User]
+
+' arrows from controllers to views (returns)
+[HomeController] --> [home]
+[ProductController] --> [products.index]
+[ProductController] --> [product_detail]
+[ProductController] --> [admin.products.index]
+[ProductController] --> [admin.products.create]
+[CartController] --> [cart]
+[CartController] --> [cart.checkout]
+[OrderController] --> [orders.index]
+[OrderController] --> [orders.show]
+[OrderController] --> [orders.waiting]
+[OrderStatusController] --> [order_status.index]
+[ProfileController] --> [profile.edit]
+[AdminDashboardController] --> [admin.dashboard]
+[AdminProductController] --> [admin.products.index]
+[AdminProductController] --> [admin.products.create]
+[AdminProductController] --> [admin.products.edit]
+[AdminOrderController] --> [admin.orders.index]
+[AdminOrderController] --> [admin.orders.show]
+[AdminCustomerController] --> [admin.customers.index]
+[AdminCustomerController] --> [admin.customers.show]
+[AdminCustomerController] --> [admin.customers.order-history]
+[ReportController] --> [admin.reports.sales]
+[ReportController] --> [admin.reports.products]
+[ReportController] --> [admin.reports.customers]
+[AuthController] --> [auth.login]
+[AuthController] --> [auth.register]
+
+' model relationships
+[User] "1" -- "*" [Cart]
+[Cart] "1" -- "*" [CartItem]
+[Product] "1" -- "*" [CartItem]
+[Order] "1" -- "*" [OrderItem]
+[Product] "1" -- "*" [OrderItem]
+[Order] "1" -- "1" [Payment]
+[Product] "1" -- "*" [Review]
+[User] "1" -- "*" [Order]
+
+@enduml

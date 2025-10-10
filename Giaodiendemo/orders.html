@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn hàng của bạn</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <style>
+        body { background: #f3f4f6; font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: 40px auto; }
+        .header, .footer { background: #0ea5e9; color: #fff; padding: 16px 0; text-align: center; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .table th, .table td { border: 1px solid #e5e7eb; padding: 8px; }
+        .table th { background: #f9fafb; }
+        .order-steps { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+        .step { display: flex; flex-direction: column; align-items: center; }
+        .step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .step-label { font-size: 12px; margin-top: 2px; }
+        .step-bar { width: 32px; height: 4px; border-radius: 2px; align-self: center; }
+        .alert { background: #e0f2fe; color: #0369a1; padding: 12px; border-radius: 6px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;">
+            <div class="logo" style="display:flex;align-items:center;gap:8px;">
+                <img src="https://via.placeholder.com/40x40?text=FS" alt="Logo" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                <span style="font-size:1.5rem;font-weight:bold;letter-spacing:1px;">Fashion Store</span>
+            </div>
+            <nav class="nav" style="display:flex;gap:32px;">
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Trang chủ</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Sản phẩm</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Đơn hàng</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Liên hệ</a>
+            </nav>
+            <div class="header-actions" style="display:flex;gap:12px;">
+                <a href="#" style="background:#fff;color:#0ea5e9;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng nhập</a>
+                <a href="#" style="background:#22c55e;color:#fff;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng ký</a>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold mb-6">Theo dõi đơn hàng</h1>
+            <!-- Demo dữ liệu đơn hàng -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Ảnh sản phẩm</th>
+                        <th>Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#1001</td>
+                        <td>06/10/2025</td>
+                        <td class="text-orange-500">1.200.000₫</td>
+                        <td><span style="background:#fde68a;color:#b45309;padding:2px 8px;border-radius:4px;">Shipping</span></td>
+                        <td>
+                            <img src="https://via.placeholder.com/60x60?text=SP1" alt="SP1" style="width:40px;height:40px;object-fit:cover;border-radius:6px;margin-right:4px;">
+                            <img src="https://via.placeholder.com/60x60?text=SP2" alt="SP2" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">
+                        </td>
+                        <td>
+                            <a href="#" style="color:#2563eb;text-decoration:underline;">Xem</a>
+                            <div class="order-steps">
+                                <div class="step">
+                                    <div class="step-circle" style="background:#22c55e;color:#fff;">1</div>
+                                    <div class="step-label">Chưa thanh toán</div>
+                                </div>
+                                <div class="step-bar" style="background:#22c55e;"></div>
+                                <div class="step">
+                                    <div class="step-circle" style="background:#0ea5e9;color:#fff;">2</div>
+                                    <div class="step-label">Đang vận chuyển</div>
+                                </div>
+                                <div class="step-bar" style="background:#d1d5db;"></div>
+                                <div class="step">
+                                    <div class="step-circle" style="background:#d1d5db;color:#6b7280;">3</div>
+                                    <div class="step-label">Đã giao hàng</div>
+                                </div>
+                                <div class="step-bar" style="background:#d1d5db;"></div>
+                                <div class="step">
+                                    <div class="step-circle" style="background:#d1d5db;color:#6b7280;">4</div>
+                                    <div class="step-label">Đã trả hàng</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Thêm các đơn hàng mẫu khác nếu cần -->
+                </tbody>
+            </table>
+            <!-- Nếu không có đơn hàng -->
+            <!-- <div class="alert">Bạn chưa có đơn hàng nào.</div> -->
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 Fashion Store. All rights reserved.</p>
+    </div>
+</body>
+</html>

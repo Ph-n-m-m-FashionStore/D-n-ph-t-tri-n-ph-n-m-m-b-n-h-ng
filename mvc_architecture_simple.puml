@@ -1,0 +1,81 @@
+@startuml
+skinparam rectangle {
+  BackgroundColor White
+  BorderColor #1f2937
+}
+
+left to right direction
+
+rectangle "CONTROLLER" as CONTROLLER {
+  [AuthController]
+  [HomeController]
+  [ProductController]
+  [CartController]
+  [OrderController]
+  [OrderStatusController]
+  [ProfileController]
+  [ReviewController]
+  [ReportController]
+  [PromotionController]
+  [CustomerController]
+  [AdminProductController]
+  [AdminOrderController]
+  [AdminDashboardController]
+  [AdminCustomerController]
+  [Auth\ForgotPasswordController]
+  [Auth\ForgotPasswordOtpController]
+  [Auth\ResetPasswordController]
+}
+
+rectangle "VIEW" as VIEW {
+  [layouts.app]
+  [home]
+  [products.index]
+  [product_detail]
+  [cart]
+  [cart.checkout]
+  [orders.index]
+  [orders.show]
+  [orders.waiting]
+  [order_status.index]
+  [profile.edit]
+  [admin.layout]
+  [admin.dashboard]
+  [admin.products.index]
+  [admin.products.create]
+  [admin.products.edit]
+  [admin.orders.index]
+  [admin.orders.show]
+
+  CONTROLLER -down-> MODEL
+  MODEL -up-> CONTROLLER
+  CONTROLLER -right-> VIEW
+  VIEW -left-> CONTROLLER
+  VIEW -down-> MODEL
+  MODEL -up-> VIEW
+  [auth.register]
+  [auth.forgot-password]
+  [auth.reset-password]
+  [auth.forgot-password-otp-email]
+}
+
+rectangle "MODEL" as MODEL {
+  [User]
+  [Product]
+  [Cart]
+  [CartItem]
+  [Order]
+  [OrderItem]
+  [Payment]
+  [Review]
+  [OrderLog]
+}
+
+CONTROLLER -down-> MODEL : Truy vấn hoặc cập nhật dữ liệu
+MODEL -up-> CONTROLLER : Trả về kết quả
+CONTROLLER -right-> VIEW : Thông báo thay đổi
+VIEW -left-> CONTROLLER : Sự kiện và hành động người dùng
+VIEW -down-> MODEL : Truy vấn trạng thái
+MODEL -up-> VIEW : Trả về trạng thái
+
+@enduml

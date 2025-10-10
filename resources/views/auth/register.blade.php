@@ -1,59 +1,109 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
-
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+@extends('layouts.app')
+@section('title', 'Đăng ký')
+@section('content')
+<div class="auth-container">
+    <div class="auth-tabs">
+        <div class="auth-forms">
+            <h2 style="text-align:center;">Tạo tài khoản mới</h2>
+            <form method="POST" action="{{ route('register') }}" class="auth-form active">
+                @csrf
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                <div class="form-group">
+                    <label for="name">Họ và tên</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="Nhập họ và tên" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="Nhập email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" required>
+                    <div class="password-requirements">
+                        <ul id="pw-req-list">
+                            <li id="pw-length"><i class="fa fa-check"></i> Ít nhất 8 ký tự</li>
+                            <li id="pw-case"><i class="fa fa-check"></i> Có chữ hoa và chữ thường</li>
+                            <li id="pw-special"><i class="fa fa-check"></i> Có số hoặc ký tự đặc biệt</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password_confirmation">Nhập lại mật khẩu</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Nhập lại mật khẩu" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="Nhập số điện thoại (tùy chọn)">
+                </div>
+                <div class="form-group">
+                    <label for="address">Địa chỉ</label>
+                    <input type="text" name="address" id="address" value="{{ old('address') }}" placeholder="Nhập địa chỉ (tùy chọn)">
+                </div>
+                <button type="submit" class="btn-primary">Đăng ký</button>
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var pwInput = document.getElementById('password');
+                    var pwLength = document.getElementById('pw-length');
+                    var pwCase = document.getElementById('pw-case');
+                    var pwSpecial = document.getElementById('pw-special');
+                    pwInput.addEventListener('input', function() {
+                        var val = pwInput.value;
+                        // Kiểm tra độ dài
+                        if (val.length >= 8) {
+                            pwLength.style.color = '#28a745';
+                            pwLength.querySelector('i').className = 'fa fa-check';
+                        } else {
+                            pwLength.style.color = 'red';
+                            pwLength.querySelector('i').className = 'fa fa-times';
+                        }
+                        // Kiểm tra chữ hoa và thường
+                        if (/[a-z]/.test(val) && /[A-Z]/.test(val)) {
+                            pwCase.style.color = '#28a745';
+                            pwCase.querySelector('i').className = 'fa fa-check';
+                        } else {
+                            pwCase.style.color = 'red';
+                            pwCase.querySelector('i').className = 'fa fa-times';
+                        }
+                        // Kiểm tra số hoặc ký tự đặc biệt
+                        if (/[0-9!@#$%^&*(),.?":{}|<>]/.test(val)) {
+                            pwSpecial.style.color = '#28a745';
+                            pwSpecial.querySelector('i').className = 'fa fa-check';
+                        } else {
+                            pwSpecial.style.color = 'red';
+                            pwSpecial.querySelector('i').className = 'fa fa-times';
+                        }
+                        // Viền đỏ cho input nếu có điều kiện sai
+                        if (
+                            val.length < 8 ||
+                            !(/[a-z]/.test(val) && /[A-Z]/.test(val)) ||
+                            !(/[0-9!@#$%^&*(),.?":{}|<>]/.test(val))
+                        ) {
+                            pwInput.style.borderColor = 'red';
+                        } else {
+                            pwInput.style.borderColor = '#28a745';
+                        }
+                    });
+                });
+                </script>
+            </form>
+            <div class="divider"></div>
+            <a href="{{ route('login') }}" class="btn-secondary">Đã có tài khoản? Đăng nhập</a>
+            <div class="benefits-box">
+                <h3>Lợi ích khi đăng ký tài khoản</h3>
+                <p>• Thanh toán nhanh chóng</p>
+                <p>• Nhận mã giảm giá và khuyến mãi</p>
+                <p>• Theo dõi lịch sử đơn hàng</p>
+                <p>• Lưu sản phẩm yêu thích</p>
+            </div>
         </div>
-
-        <!-- Phone (nullable) -->
-        <div class="mt-4">
-            <x-input-label for="phone" :value="__('Phone')" />
-            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone')" autocomplete="tel" />
-            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
-        </div>
-
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </div>
+</div>
+@endsection

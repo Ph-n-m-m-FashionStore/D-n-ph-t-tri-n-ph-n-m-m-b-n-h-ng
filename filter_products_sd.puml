@@ -1,0 +1,35 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+control C as "Bộ điều khiển Sản phẩm"
+entity P as "Danh sách sản phẩm"
+boundary V as "Giao diện"
+
+== Lọc sản phẩm ==
+N -> C : Yêu cầu danh sách sản phẩm
+activate C
+C -> P : Lấy sản phẩm đang hoạt động
+activate P
+P --> C : Danh sách sản phẩm
+alt Có từ khóa tìm kiếm
+  C -> P : Lọc theo từ khóa
+end
+alt Có thương hiệu
+  C -> P : Lọc theo thương hiệu
+end
+alt Có kích cỡ
+  C -> P : Lọc theo kích cỡ
+end
+alt Có khoảng giá
+  C -> P : Lọc theo giá
+end
+alt Có giới tính
+  C -> P : Lọc theo giới tính
+end
+deactivate P
+C -> V : Chuẩn bị giao diện danh sách sản phẩm
+deactivate C
+activate V
+V --> N : Hiển thị danh sách sản phẩm
+deactivate V
+@enduml

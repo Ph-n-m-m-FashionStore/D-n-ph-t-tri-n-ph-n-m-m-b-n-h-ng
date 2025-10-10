@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor N as "Người dùng (đã đăng nhập)"
+boundary V as "View: Trang đánh giá sản phẩm"
+control RC as "Chức năng: Xử lý đánh giá sản phẩm"
+database R as "Cơ sở dữ liệu: Đánh giá sản phẩm"
+
+N -> V : Gửi đánh giá cho sản phẩm
+activate V
+V -> RC : Xử lý đánh giá
+deactivate V
+activate RC
+RC -> RC : Kiểm tra nội dung đánh giá hợp lệ
+RC -> R : Lưu đánh giá mới
+activate R
+R --> RC : Lưu thành công
+deactivate R
+RC --> N : Quay lại và thông báo đã gửi
+deactivate RC
+@enduml

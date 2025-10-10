@@ -1,0 +1,48 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang đăng ký/đăng nhập/đăng xuất"
+control A as "Chức năng: Xác thực người dùng"
+database U as "Cơ sở dữ liệu: Người dùng"
+
+== Đăng ký ==
+N -> V : Mở trang đăng ký
+activate V
+V -> V : Hiển thị biểu mẫu đăng ký
+V --> N : Người dùng điền thông tin
+N -> V : Gửi biểu mẫu đăng ký
+activate A
+A -> A : Kiểm tra hợp lệ thông tin
+A -> U : Tạo tài khoản mới (vai trò khách)
+activate U
+U --> A : Tài khoản được tạo
+deactivate U
+A -> N : Đăng nhập ngay sau đăng ký
+A --> N : Chuyển về trang chủ
+deactivate A
+
+== Đăng nhập ==
+N -> V : Mở trang đăng nhập
+activate V
+V -> V : Hiển thị biểu mẫu đăng nhập
+V --> N : Người dùng nhập email/mật khẩu
+N -> V : Gửi thông tin đăng nhập
+activate A
+A -> U : Kiểm tra thông tin đăng nhập
+activate U
+U --> A : Kết quả xác thực
+deactivate U
+alt Tài khoản quản trị
+  A --> N : Chuyển đến trang quản trị
+else Tài khoản khách
+  A --> N : Chuyển về trang chủ
+end
+deactivate A
+
+== Đăng xuất ==
+N -> W : Chọn đăng xuất
+activate W
+W -> A : Hủy phiên đăng nhập
+W --> N : Trở về trang chủ
+deactivate W
+@enduml

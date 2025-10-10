@@ -1,0 +1,39 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang danh sách/chi tiết sản phẩm"
+control PC as "Chức năng: Xử lý sản phẩm"
+database PM as "Cơ sở dữ liệu: Sản phẩm"
+
+== Xem danh sách ==
+N -> V : Mở trang danh sách sản phẩm
+activate V
+V -> PC : Yêu cầu lấy danh sách
+deactivate V
+activate PC
+PC -> PM : Lọc hàng đang bán + điều kiện tìm kiếm
+activate PM
+PM --> PC : Danh sách sản phẩm (phân trang)
+deactivate PM
+PC -> V : Chuẩn bị trang hiển thị danh sách
+deactivate PC
+activate V
+V --> N : Hiển thị danh sách sản phẩm
+deactivate V
+
+== Xem chi tiết ==
+N -> V : Chọn một sản phẩm để xem chi tiết
+activate V
+V -> PC : Yêu cầu thông tin sản phẩm
+deactivate V
+activate PC
+PC -> PM : Lấy thông tin sản phẩm theo lựa chọn
+activate PM
+PM --> PC : Thông tin sản phẩm
+deactivate PM
+PC -> V : Chuẩn bị trang chi tiết
+deactivate PC
+activate V
+V --> N : Hiển thị thông tin chi tiết sản phẩm
+deactivate V
+@enduml

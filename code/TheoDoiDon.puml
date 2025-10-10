@@ -1,0 +1,32 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang theo dõi đơn hàng"
+control OS as "Chức năng: Xử lý trạng thái đơn hàng"
+database O as "Cơ sở dữ liệu: Đơn hàng"
+
+== Tra cứu ==
+N -> V : Mở trang theo dõi đơn hàng
+activate V
+V -> OS : Hiển thị ô nhập thông tin tra cứu
+deactivate V
+activate OS
+OS -> V : Chuẩn bị giao diện tra cứu
+deactivate OS
+activate V
+V --> N : Người dùng nhập thông tin tra cứu
+deactivate V
+
+== Cập nhật trạng thái (khi đã đăng nhập) ==
+N -> V : Gửi yêu cầu cập nhật trạng thái
+activate V
+V -> OS : Xử lý yêu cầu cập nhật
+deactivate V
+activate OS
+OS -> O : Kiểm tra và cập nhật trạng thái đơn
+activate O
+O --> OS : Kết quả cập nhật
+deactivate O
+OS --> N : Thông báo trạng thái mới
+deactivate OS
+@enduml

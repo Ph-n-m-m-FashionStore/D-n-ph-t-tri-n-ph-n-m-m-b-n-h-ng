@@ -1,0 +1,32 @@
+@startuml
+autonumber
+actor KH as "Khách hàng"
+boundary G as "Giao diện web"
+control SP as "Trang chi tiết sản phẩm"
+entity DL as "Dữ liệu sản phẩm"
+database CSDL as "Cơ sở dữ liệu"
+
+== Xem chi tiết sản phẩm ==
+KH -> G : Truy cập trang chi tiết sản phẩm
+activate G
+G -> SP : Yêu cầu lấy thông tin sản phẩm
+activate SP
+SP -> DL : Lấy sản phẩm theo mã
+activate DL
+DL -> CSDL : Truy vấn sản phẩm theo mã
+CSDL --> DL : Trả về thông tin sản phẩm
+alt Sản phẩm tồn tại
+  DL --> SP : Thông tin sản phẩm
+  SP -> G : Chuẩn bị dữ liệu hiển thị
+  activate G
+  G --> KH : Hiển thị chi tiết sản phẩm
+  deactivate G
+else Không tìm thấy sản phẩm
+  DL --> SP : Thông báo lỗi
+  SP --> G : Hiển thị thông báo lỗi
+  G --> KH : Thông báo sản phẩm không tồn tại
+end
+deactivate DL
+deactivate SP
+deactivate G
+@enduml

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <style>
+        body { background: #f3f4f6; font-family: Arial, sans-serif; }
+        .container { max-width: 900px; margin: 40px auto; }
+        .product-detail { display: flex; gap: 32px; background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(21,30,38,0.04); padding: 32px; }
+        .product-img { width: 340px; height: 340px; object-fit: cover; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.12); }
+        .product-info { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .product-name { font-size: 2rem; font-weight: bold; }
+        .product-brand { color: #666; }
+        .product-price { color: #e40000; font-size: 1.3rem; font-weight: bold; }
+        .btn { padding: 8px 20px; border-radius: 6px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; margin-right: 8px; }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-warning { background: #f59e42; color: #fff; }
+        .review-box { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; margin-top: 32px; }
+        .review-item { margin-bottom: 16px; }
+        .review-user { font-weight: bold; }
+        .review-rating { color: #fbbf24; margin-left: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Header giống orders.html -->
+    <header class="header">
+        <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;">
+            <div class="logo" style="display:flex;align-items:center;gap:8px;">
+                <img src="https://via.placeholder.com/40x40?text=FS" alt="Logo" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                <span style="font-size:1.5rem;font-weight:bold;letter-spacing:1px;">Fashion Store</span>
+            </div>
+            <nav class="nav" style="display:flex;gap:32px;">
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Trang chủ</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Sản phẩm</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Đơn hàng</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Liên hệ</a>
+            </nav>
+            <div class="header-actions" style="display:flex;gap:12px;">
+                <a href="#" style="background:#fff;color:#0ea5e9;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng nhập</a>
+                <a href="#" style="background:#22c55e;color:#fff;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng ký</a>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="product-detail">
+            <img src="https://via.placeholder.com/340x340?text=SP1" alt="Áo thun nam basic" class="product-img">
+            <div class="product-info">
+                <div class="product-name">Áo thun nam basic</div>
+                <div class="product-brand">Thương hiệu: FashionStore</div>
+                <div class="product-price">199.000₫</div>
+                <div>Mô tả: Áo thun nam chất liệu cotton, thoáng mát, phù hợp mọi hoạt động.</div>
+                <div>Size: M, L, XL</div>
+                <div>Số lượng: <input type="number" min="1" value="1" style="width:60px;padding:4px;border-radius:4px;border:1px solid #eee;" /></div>
+                <div>
+                    <button class="btn btn-success">Thêm vào giỏ hàng</button>
+                    <button class="btn btn-warning">Mua ngay</button>
+                </div>
+                <div style="background:#ffe4b5;padding:8px 12px;border-radius:6px;margin-top:8px;">Khuyến mãi: Nhập mã <b>SALE50</b> giảm 50% cho đơn hàng đầu tiên!</div>
+                <div style="margin-top:8px;">Đánh giá: <span style="color:#fbbf24;font-weight:bold;">4.5 ★</span> (120 đánh giá)</div>
+            </div>
+        </div>
+        <div class="review-box">
+            <h2 style="font-size:1.2rem;font-weight:bold;margin-bottom:12px;">Đánh giá sản phẩm</h2>
+            <div class="review-item">
+                <span class="review-user">Nguyễn Văn A</span>
+                <span class="review-rating">★★★★★</span>
+                <div>Áo đẹp, chất vải tốt, giao hàng nhanh!</div>
+            </div>
+            <div class="review-item">
+                <span class="review-user">Trần Thị B</span>
+                <span class="review-rating">★★★★☆</span>
+                <div>Mặc thoải mái, sẽ ủng hộ tiếp.</div>
+            </div>
+            <!-- Thêm các đánh giá mẫu khác nếu cần -->
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 Fashion Store. All rights reserved.</p>
+    </div>
+</body>
+</html>

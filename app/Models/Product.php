@@ -15,8 +15,13 @@ class Product extends Model
         'price',
         'image_url',
         'product_type',
+        'color',
         'reference_id',
         'is_active',
+        'stock',
+        'brand',
+        'size',
+        'gender',
     ];
 
     public function carVariant()
@@ -29,17 +34,32 @@ class Product extends Model
         return $this->belongsTo(Accessory::class, 'reference_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     public function getImageUrlAttribute()
     {
         if ($this->attributes['image_url']) {
-            // Check if it's an external URL (starts with http)
-            if (filter_var($this->attributes['image_url'], FILTER_VALIDATE_URL)) {
-                return $this->attributes['image_url'];
+            $url = $this->attributes['image_url'];
+            // Nếu là URL ngoài
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                return $url;
             }
-            // If it's a local file path, prepend storage path
-            return asset('storage/' . $this->attributes['image_url']);
+            // Nếu là đường dẫn /images/... thì trả về asset('images/...')
+            if (strpos($url, '/images/') === 0) {
+                return asset($url);
+            }
+            // Nếu là file trong storage
+            return asset('storage/' . ltrim($url, '/'));
         }
-        // Use placeholder images for demo
+        // Placeholder nếu chưa có ảnh
         $productName = $this->name ?? 'Product';
         $encodedName = urlencode($productName);
         return "https://via.placeholder.com/300x200/10b981/ffffff?text={$encodedName}";

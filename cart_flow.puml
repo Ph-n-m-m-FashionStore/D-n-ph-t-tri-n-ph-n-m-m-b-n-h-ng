@@ -1,0 +1,50 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary W as "Tuyến đường (yêu cầu đăng nhập)"
+control C as "Bộ điều khiển Giỏ hàng"
+entity Cart as "Giỏ hàng của người dùng"
+entity CI as "Các dòng trong giỏ"
+boundary V as "Giao diện"
+
+== Xem giỏ ==
+N -> W : Mở trang giỏ hàng
+activate W
+W -> C : Yêu cầu dữ liệu giỏ
+deactivate W
+activate C
+C -> Cart : Lấy các dòng sản phẩm kèm thông tin
+activate Cart
+Cart --> C : Danh sách dòng giỏ + số lượng
+deactivate Cart
+C -> V : Chuẩn bị trang giỏ hàng
+deactivate C
+activate V
+V --> N : Hiển thị giỏ hàng
+deactivate V
+
+== Thêm vào giỏ ==
+N -> W : Thêm sản phẩm vào giỏ
+activate W
+W -> C : Xử lý thêm vào giỏ
+deactivate W
+activate C
+C -> Cart : Bảo đảm có giỏ hàng cho người dùng
+activate Cart
+Cart --> C : Giỏ hàng hiện tại
+deactivate Cart
+C -> CI : Tìm dòng sản phẩm tương ứng
+activate CI
+alt Đã có trong giỏ
+  CI -> CI : Tăng số lượng
+else Chưa có
+  C -> CI : Tạo dòng mới
+end
+deactivate CI
+alt Người dùng chọn “Mua ngay”
+  C --> N : Chuyển đến bước thanh toán
+else Ở lại giỏ hàng
+  C --> N : Thông báo thêm thành công
+end
+deactivate C
+@enduml

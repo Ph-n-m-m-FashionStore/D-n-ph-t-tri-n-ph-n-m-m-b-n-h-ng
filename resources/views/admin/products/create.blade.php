@@ -1,52 +1,176 @@
-@extends('admin.layouts.app')
+@extends('admin.layout')
 
-@section('title', 'Thêm sản phẩm')
+@section('title', 'Thêm sản phẩm mới')
+@section('page-title', 'Thêm sản phẩm mới')
 
 @section('content')
-<div class="bg-white p-6 rounded shadow max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">📦 THÊM SẢN PHẨM MỚI</h1>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Thông tin sản phẩm mới
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Tên sản phẩm -->
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                       id="name" name="name" value="{{ old('name') }}" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-    <form action="{{ route('admin.products.store') }}" method="POST">
-        @csrf
+                            <!-- Mô tả -->
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Mô tả sản phẩm <span class="text-danger">*</span></label>
+                                <textarea class="form-control @error('description') is-invalid @enderror" 
+                                          id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-        <div class="mb-4">
-            <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Tên sản phẩm</label>
-            <input type="text" id="name" name="name" value="{{ old('name') }}" class="w-full border-gray-300 rounded px-4 py-2" required>
+                            <div class="row">
+                                <!-- Giá -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">Giá sản phẩm (₫) <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('price') is-invalid @enderror" 
+                                               id="price" name="price" value="{{ old('price') }}" min="0" step="1000" required>
+                                        @error('price')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <!-- Tồn kho -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="stock" class="form-label">Tồn kho <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('stock') is-invalid @enderror" 
+                                               id="stock" name="stock" value="{{ old('stock', 0) }}" min="0" required>
+                                        @error('stock')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Thương hiệu -->
+                            <div class="mb-3">
+                                <label for="brand" class="form-label">Thương hiệu</label>
+                                <input type="text" class="form-control @error('brand') is-invalid @enderror" 
+                                       id="brand" name="brand" value="{{ old('brand') }}">
+                                @error('brand')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <!-- Ẩn product_type, luôn là 'clothing' -->
+                            <input type="hidden" name="product_type" value="clothing">
+                            <!-- Size -->
+                            <div class="mb-3">
+                                <label for="size" class="form-label">Size</label>
+                                <input type="text" class="form-control @error('size') is-invalid @enderror" 
+                                       id="size" name="size" value="{{ old('size') }}">
+                                @error('size')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <!-- Giới tính -->
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Giới tính <span class="text-danger">*</span></label>
+                                <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender" required>
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="nam" {{ old('gender') == 'nam' ? 'selected' : '' }}>Nam</option>
+                                    <option value="nu" {{ old('gender') == 'nu' ? 'selected' : '' }}>Nữ</option>
+                                    <option value="tatca" {{ old('gender') == 'tatca' ? 'selected' : '' }}>Tất cả</option>
+                                </select>
+                                @error('gender')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                           value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">
+                                        Sản phẩm đang bán
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Upload ảnh -->
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Hình ảnh sản phẩm <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control @error('image') is-invalid @enderror" 
+                                       id="image" name="image" accept="image/png,image/jpg,image/jpeg" required>
+                                @error('image')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">
+                                    Định dạng: PNG, JPG, JPEG. Kích thước tối đa: 2MB
+                                </div>
+                            </div>
+
+                            <!-- Preview ảnh -->
+                            <div id="image-preview" class="text-center" style="display: none;">
+                                <img id="preview-img" src="" alt="Preview" 
+                                     class="img-fluid rounded" style="max-height: 200px;">
+                                <p class="text-muted mt-2">Xem trước ảnh</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Lưu sản phẩm
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="mb-4">
-            <label for="product_type" class="block text-sm font-semibold text-gray-700 mb-1">Loại</label>
-            <select id="product_type" name="product_type" required class="w-full border-gray-300 rounded px-4 py-2">
-                <option value="car">Car</option>
-                <option value="accessory">Accessory</option>
-            </select>
-        </div>
-
-        <div class="mb-4">
-            <label for="price" class="block text-sm font-semibold text-gray-700 mb-1">Giá</label>
-            <input type="number" id="price" name="price" value="{{ old('price') }}" step="0.01" class="w-full border-gray-300 rounded px-4 py-2" required>
-        </div>
-
-        <div class="mb-4">
-            <label for="image_url" class="block text-sm font-semibold text-gray-700 mb-1">Link hình ảnh</label>
-            <input type="url" id="image_url" name="image_url" value="{{ old('image_url') }}" class="w-full border-gray-300 rounded px-4 py-2">
-        </div>
-
-        <div class="mb-4">
-            <label for="description" class="block text-sm font-semibold text-gray-700 mb-1">Mô tả</label>
-            <textarea id="description" name="description" rows="4" class="w-full border-gray-300 rounded px-4 py-2">{{ old('description') }}</textarea>
-        </div>
-
-        <div class="mb-4 flex items-center gap-3">
-            <input type="checkbox" id="is_active" name="is_active" value="1" class="text-indigo-600" checked>
-            <label for="is_active" class="text-sm text-gray-700">Hiển thị</label>
-        </div>
-
-        <div class="text-right">
-            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded shadow hover:bg-indigo-700">
-                Lưu sản phẩm
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+// Preview ảnh khi chọn file
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('image-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        document.getElementById('image-preview').style.display = 'none';
+    }
+});
+
+// Format giá tiền
+document.getElementById('price').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    e.target.value = value;
+});
+</script>
 @endsection

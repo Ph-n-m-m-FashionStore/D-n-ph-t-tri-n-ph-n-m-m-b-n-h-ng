@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang chủ/đăng xuất"
+control A as "Chức năng: Hủy phiên đăng nhập"
+database U as "Cơ sở dữ liệu: Người dùng"
+
+== Đăng xuất ==
+N -> V : Chọn đăng xuất
+activate V
+V -> A : Hủy phiên đăng nhập
+activate A
+A -> U : Xóa phiên đăng nhập
+U --> A : Xác nhận hủy phiên
+deactivate U
+A --> V : Trở về trang chủ
+deactivate A
+V --> N : Trở về trang chủ
+deactivate V
+@enduml

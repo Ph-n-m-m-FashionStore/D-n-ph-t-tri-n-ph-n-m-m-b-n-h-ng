@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách sản phẩm</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <style>
+        body { background: #f3f4f6; font-family: Arial, sans-serif; }
+        .container { max-width: 1100px; margin: 40px auto; }
+        .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .product-card { background: #fff; border-radius: 10px; box-shadow: 0 6px 18px rgba(21,30,38,0.04); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.22s, box-shadow 0.22s; }
+        .product-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(21,30,38,0.08); }
+        .product-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+        .product-info { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .product-title { font-size: 1.1rem; font-weight: bold; color: #222; }
+        .product-desc { color: #666; font-size: 0.98rem; }
+        .product-meta { font-size: 0.97rem; color: #444; margin-bottom: 8px; }
+        .product-price { color: #e40000; font-weight: bold; }
+        .btn { padding: 8px 0; border-radius: 6px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; background: #22c55e; color: #fff; margin-top: 8px; }
+        @media (max-width: 1100px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px)  { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px)  { .products-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Header giống orders.html -->
+    <header class="header">
+        <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;">
+            <div class="logo" style="display:flex;align-items:center;gap:8px;">
+                <img src="https://via.placeholder.com/40x40?text=FS" alt="Logo" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                <span style="font-size:1.5rem;font-weight:bold;letter-spacing:1px;">Fashion Store</span>
+            </div>
+            <nav class="nav" style="display:flex;gap:32px;">
+                <a href="home.html" style="color:#fff;text-decoration:none;font-weight:500;">Trang chủ</a>
+                <a href="products.html" style="color:#fff;text-decoration:none;font-weight:500;">Sản phẩm</a>
+                <a href="orders.html" style="color:#fff;text-decoration:none;font-weight:500;">Đơn hàng</a>
+                <a href="#" style="color:#fff;text-decoration:none;font-weight:500;">Liên hệ</a>
+            </nav>
+            <div class="header-actions" style="display:flex;gap:12px;">
+                <a href="login.html" style="background:#fff;color:#0ea5e9;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng nhập</a>
+                <a href="register.html" style="background:#22c55e;color:#fff;padding:6px 16px;border-radius:6px;font-weight:500;text-decoration:none;">Đăng ký</a>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <h2 style="font-size:1.5rem;font-weight:bold;margin:32px 0 18px;">Danh sách sản phẩm</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="https://via.placeholder.com/300x300?text=SP1" alt="Áo thun nam basic" class="product-img">
+                <div class="product-info">
+                    <div class="product-title">Áo thun nam basic</div>
+                    <div class="product-desc">Chất liệu cotton, thoáng mát.</div>
+                    <div class="product-meta">Thương hiệu: FashionStore | Size: M, L, XL | Tồn kho: 20</div>
+                    <div class="product-price">199.000₫</div>
+                    <button class="btn">Thêm vào giỏ hàng</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/300x300?text=SP2" alt="Quần jeans nữ" class="product-img">
+                <div class="product-info">
+                    <div class="product-title">Quần jeans nữ</div>
+                    <div class="product-desc">Form ôm, co giãn nhẹ.</div>
+                    <div class="product-meta">Thương hiệu: DenimPro | Size: S, M, L | Tồn kho: 15</div>
+                    <div class="product-price">399.000₫</div>
+                    <button class="btn">Thêm vào giỏ hàng</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/300x300?text=SP3" alt="Áo khoác bomber" class="product-img">
+                <div class="product-info">
+                    <div class="product-title">Áo khoác bomber</div>
+                    <div class="product-desc">Chống gió, chống nước nhẹ.</div>
+                    <div class="product-meta">Thương hiệu: BomberX | Size: M, L, XL | Tồn kho: 10</div>
+                    <div class="product-price">499.000₫</div>
+                    <button class="btn">Thêm vào giỏ hàng</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/300x300?text=SP4" alt="Váy maxi hoa" class="product-img">
+                <div class="product-info">
+                    <div class="product-title">Váy maxi hoa</div>
+                    <div class="product-desc">Vải voan nhẹ, họa tiết hoa.</div>
+                    <div class="product-meta">Thương hiệu: MaxiQueen | Size: S, M, L | Tồn kho: 8</div>
+                    <div class="product-price">299.000₫</div>
+                    <button class="btn">Thêm vào giỏ hàng</button>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center;margin:32px 0 0;">
+            <button class="btn" style="background:#0ea5e9;">Xem thêm sản phẩm</button>
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 Fashion Store. All rights reserved.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+@startuml
+!define RECTANGLE_COLOR #ADD8E6
+skinparam rectangle {
+    BackgroundColor RECTANGLE_COLOR
+    BorderColor black
+    FontColor black
+}
+
+class Product {
+    +id: int
+    +name: string
+    +description: string
+    +brand: string
+    +size: string
+    +price: decimal
+    +stock: int
+    +image_url: string
+    +is_active: bool
+    +created_at: timestamp
+}
+
+class Cart {
+    +id: int
+    +user_id: int
+    +created_at: timestamp
+}
+
+class CartItem {
+    +id: int
+    +cart_id: int
+    +product_id: int
+    +quantity: int
+    +created_at: timestamp
+}
+
+class Order {
+    +id: int
+    +user_id: int
+    +status: string
+    +total: decimal
+    +created_at: timestamp
+}
+
+class OrderItem {
+    +id: int
+    +order_id: int
+    +product_id: int
+    +quantity: int
+    +price: decimal
+    +created_at: timestamp
+}
+
+class User {
+    +id: int
+    +name: string
+    +email: string
+    +password: string
+    +created_at: timestamp
+}
+
+class Admin {
+    +id: int
+    +name: string
+    +email: string
+    +password: string
+    +role: string
+    +created_at: timestamp
+}
+
+Product "1" -- "*" CartItem : contains
+Cart "1" -- "*" CartItem : has
+Order "1" -- "*" OrderItem : includes
+User "1" -- "*" Cart : owns
+User "1" -- "*" Order : places
+Admin "1" -- "*" Product : manages
+Admin "1" -- "*" Order : oversees
+@enduml

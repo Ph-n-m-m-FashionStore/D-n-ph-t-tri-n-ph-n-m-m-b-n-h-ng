@@ -10,11 +10,10 @@ class CartItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'session_id',
-        'user_id',
+        'cart_id',
         'product_id',
-        'color_id',
         'quantity',
+        // Nếu có các trường khác thì thêm vào
     ];
 
     public function user()

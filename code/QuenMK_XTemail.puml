@@ -1,0 +1,47 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang quên mật khẩu"
+control C as "Chức năng: Xác thực email, đổi mật khẩu"
+database U as "Cơ sở dữ liệu: Người dùng"
+entity E as "Hệ thống Email"
+
+== Quên mật khẩu ==
+N -> V : Mở trang quên mật khẩu
+activate V
+V -> C : Gửi yêu cầu đặt lại mật khẩu
+deactivate V
+activate C
+C -> U : Kiểm tra email người dùng
+activate U
+alt Email tồn tại
+  U --> C : Thông tin người dùng
+  C -> E : Gửi email xác thực
+  activate E
+  E --> N : Email xác thực được gửi
+  deactivate E
+else Email không tồn tại
+  U --> C : Thông báo lỗi
+  C --> N : Hiển thị lỗi
+end
+deactivate U
+deactivate C
+
+== Xác thực email ==
+N -> V : Nhập mã xác thực
+activate V
+V -> C : Gửi mã xác thực
+deactivate V
+activate C
+C -> U : Kiểm tra mã xác thực
+activate U
+alt Mã hợp lệ
+  U --> C : Xác thực thành công
+  C --> N : Chuyển đến trang đặt lại mật khẩu
+else Mã không hợp lệ
+  U --> C : Thông báo lỗi
+  C --> N : Hiển thị lỗi
+end
+deactivate U
+deactivate C
+@enduml

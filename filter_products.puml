@@ -1,0 +1,33 @@
+@startuml
+
+!define RECTANGLE_COLOR #ADD8E6
+skinparam rectangle {
+    BackgroundColor RECTANGLE_COLOR
+    BorderColor black
+    FontColor black
+}
+
+actor User
+rectangle "ProductController@index" as Controller {
+    rectangle "Retrieve active products" as Query1
+    rectangle "Apply search filter" as Query2
+    rectangle "Apply brand filter" as Query3
+    rectangle "Apply size filter" as Query4
+    rectangle "Apply price filter" as Query5
+    rectangle "Apply gender filter" as Query6
+    rectangle "Return filtered products" as Return
+}
+
+title "Filter Products Sequence"
+
+User -> Controller : Request product list
+Controller -> Query1 : Fetch products where is_active = 1
+Query1 -> Query2 : Check if search parameter exists
+Query2 -> Query3 : Check if brand parameter exists
+Query3 -> Query4 : Check if size parameter exists
+Query4 -> Query5 : Check if price parameter exists
+Query5 -> Query6 : Check if gender parameter exists
+Query6 -> Return : Return filtered products
+Return -> User : Display products
+
+@enduml

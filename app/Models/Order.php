@@ -11,14 +11,19 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'phone',
         'name',
-        'email',
+        'phone', 
         'address',
-        'total_price',
         'note',
-        'payment_method',
         'status',
+        'total',
+        'payment_type'
+    ];
+
+    protected $casts = [
+        'total' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     public function user()
@@ -26,8 +31,41 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+    // Alias for orderItems để tương thích
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        $badges = [
+            'pending' => 'warning',
+            'confirmed' => 'info',
+            'shipping' => 'primary',
+            'completed' => 'success',
+            'canceled' => 'danger'
+        ];
+        return $badges[$this->status] ?? 'secondary';
+    }
+
+    public function getCustomerNameAttribute()
+    {
+        return $this->name ?: $this->user->name;
+    }
+
+    public function getCustomerPhoneAttribute()
+    {
+        return $this->phone ?: $this->user->phone;
     }
 }

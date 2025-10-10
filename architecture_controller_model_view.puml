@@ -1,0 +1,82 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+title Kiến trúc Controller → Model → View (dựa trên code thực tế)
+
+package "Controllers" {
+  [ProductController]
+  [CartController]
+  [OrderController]
+  [AuthController]
+  [AdminProductController]
+  [AdminOrderController]
+}
+
+package "Models" {
+  [User]
+  [Product]
+  [Cart]
+  [CartItem]
+  [Order]
+  [OrderItem]
+  [Payment]
+  [Review]
+}
+
+package "Views (Blade)" {
+  [products.index]
+  [product_detail]
+  [admin.products.index]
+  [admin.products.create]
+  [cart]
+  [cart.checkout]
+  [orders.index]
+  [orders.show]
+  [admin.orders.index]
+}
+
+' --- Controller to Model mappings (from code)
+[ProductController] --> [Product] : uses (index, show, adminIndex, store, update, destroy)
+[CartController] --> [Cart]
+[CartController] --> [CartItem]
+[CartController] --> [Product] : reads product for price/name
+[OrderController] --> [Order]
+[OrderController] --> [OrderItem]
+[OrderController] --> [Payment]
+
+' --- Controller to View mappings
+[ProductController] --> [products.index] : returns
+[ProductController] --> [product_detail] : returns
+[ProductController] --> [admin.products.index] : returns
+[ProductController] --> [admin.products.create] : returns
+
+[CartController] --> [cart] : returns (index)
+[CartController] --> [cart.checkout] : returns (checkout)
+
+[OrderController] --> [orders.index]
+[OrderController] --> [orders.show]
+[OrderController] --> [admin.orders.index]
+
+' --- Model relationships (from migrations & models)
+[User] "1" -- "*" [Cart] : owns
+[Cart] "1" -- "*" [CartItem] : contains
+[Product] "1" -- "*" [CartItem] : referenced-by
+[Order] "1" -- "*" [OrderItem] : includes
+[Product] "1" -- "*" [OrderItem] : referenced-by
+[Order] "1" -- "1" [Payment] : has
+[Product] "1" -- "*" [Review] : receives
+[User] "1" -- "*" [Order] : places
+
+' --- Notes for reviewers
+note right of [ProductController]
+  - upload: moves image to public/images
+  - image_url stored as 'images/<file>' or 'storage/...'
+end note
+
+note bottom
+  Diagram generated from: controllers in app/Http/Controllers and models in app/Models
+  Use this to explain how requests flow: Controller -> Model -> View (Blade)
+end note
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+autonumber
+actor N as "Người dùng"
+boundary V as "View: Trang đơn hàng"
+control OC as "Chức năng: Xử lý đơn hàng"
+database O as "Cơ sở dữ liệu: Đơn hàng"
+
+== Xem danh sách đơn ==
+N -> V : Mở mục “Đơn hàng của tôi”
+activate V
+V -> OC : Yêu cầu danh sách đơn
+deactivate V
+activate OC
+OC -> O : Lọc các đơn thuộc tài khoản hiện tại
+activate O
+O --> OC : Danh sách đơn hàng
+deactivate O
+OC -> V : Chuẩn bị trang danh sách đơn
+deactivate OC
+activate V
+V --> N : Hiển thị danh sách đơn
+deactivate V
+
+== Xem chi tiết đơn ==
+N -> V : Chọn một đơn hàng để xem
+activate V
+V -> OC : Yêu cầu thông tin chi tiết
+deactivate V
+activate OC
+alt Tài khoản quản trị
+  OC -> O : Lấy đầy đủ thông tin đơn (khách + thanh toán + sản phẩm)
+else Tài khoản khách
+  OC -> O : Lấy thông tin đơn thuộc tài khoản hiện tại
+end
+activate O
+O --> OC : Thông tin chi tiết đơn
+deactivate O
+OC -> V : Chuẩn bị trang chi tiết đơn
+deactivate OC
+activate V
+V --> N : Hiển thị chi tiết đơn hàng
+deactivate V
+@enduml

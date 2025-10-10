@@ -1,0 +1,111 @@
+@startuml
+!define RECTANGLE_COLOR #ADD8E6
+skinparam rectangle {
+    BackgroundColor RECTANGLE_COLOR
+    BorderColor black
+    FontColor black
+}
+
+class User {
+    +id: int
+    +name: string
+    +email: string
+    +phone: string
+    +password: string
+    +role: enum(customer, admin)
+    +created_at: timestamp
+    +updated_at: timestamp
+}
+
+class Product {
+    +id: int
+    +name: string
+    +description: text
+    +brand: string
+    +size: string
+    +gender: string
+    +price: decimal
+    +stock: int
+    +image_url: string
+    +is_active: bool
+    +created_at: timestamp
+}
+
+class Cart {
+    +id: int
+    +user_id: int
+    +created_at: timestamp
+    +updated_at: timestamp
+}
+
+class CartItem {
+    +id: int
+    +cart_id: int
+    +product_id: int
+    +quantity: int
+    +created_at: timestamp
+    +updated_at: timestamp
+}
+
+class Order {
+    +id: int
+    +user_id: int
+    +name: string
+    +phone: string
+    +address: string
+    +note: text
+    +status: enum(pending, confirmed, shipping, completed, canceled)
+    +total: decimal
+    +created_at: timestamp
+    +updated_at: timestamp
+}
+
+class OrderDetail {
+    +id: int
+    +order_id: int
+    +product_id: int
+    +quantity: int
+    +price: decimal
+}
+
+class Payment {
+    +id: int
+    +order_id: int
+    +method: string
+    +amount: decimal
+    +status: enum(pending, paid, failed, refunded)
+    +transaction_id: string
+    +payment_date: timestamp
+    +notes: text
+    +created_at: timestamp
+    +updated_at: timestamp
+}
+
+class Review {
+    +id: int
+    +user_id: int
+    +product_id: int
+    +rating: int
+    +comment: text
+    +created_at: timestamp
+}
+
+class Promotion {
+    +id: int
+    +code: string
+    +discount_percent: int
+    +start_date: date
+    +end_date: date
+    +created_at: timestamp
+}
+
+User "1" -- "*" Cart : owns
+Cart "1" -- "*" CartItem : contains
+CartItem "1" -- "1" Product : references
+User "1" -- "*" Order : places
+Order "1" -- "*" OrderDetail : includes
+Order "1" -- "1" Payment : has
+User "1" -- "*" Review : writes
+Product "1" -- "*" Review : receives
+Promotion "1" -- "*" Product : applies
+@enduml
