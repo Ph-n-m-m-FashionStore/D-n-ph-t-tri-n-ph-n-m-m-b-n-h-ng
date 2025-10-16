@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Order;
 use App\Http\Requests\CustomerRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
@@ -14,13 +15,16 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
         $query = User::where('role', 'customer')
-            ->withCount('orders')
-            ->withSum('orders as total_spent', 'total');
+            ->withCount(['orders', 'reviews'])
+            // Eager load completed orders with orderItems so computed_total_spent accessor can use them
+            ->with(['orders' => function($q) {
+                $q->where('status', 'completed')->with('orderItems');
+            }]);
 
         // Tìm kiếm theo tên, email, phone
         if ($request->has('search') && $request->search) {
@@ -82,7 +86,7 @@ class CustomerController extends Controller
      */
     public function show(User $customer)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -98,11 +102,17 @@ class CustomerController extends Controller
             }
         ]);
 
-        // Thống kê khách hàng
+        // Thống kê khách hàng (use computed_total on orders for accurate sums)
+        $completedOrders = $customer->orders->where('status', 'completed');
+        $totalSpent = $completedOrders->sum(function($order) {
+            return $order->computed_total ?? ($order->total ?? 0);
+        });
+        $avgOrderValue = $completedOrders->count() ? ($totalSpent / $completedOrders->count()) : 0;
+
         $customerStats = [
             'total_orders' => $customer->orders->count(),
-            'total_spent' => $customer->orders->where('status', 'completed')->sum('total'),
-            'avg_order_value' => $customer->orders->where('status', 'completed')->avg('total'),
+            'total_spent' => $totalSpent,
+            'avg_order_value' => $avgOrderValue,
             'last_order_date' => $customer->orders->first()?->created_at,
             'orders_by_status' => $customer->orders->groupBy('status')->map->count()
         ];
@@ -118,7 +128,7 @@ class CustomerController extends Controller
      */
     public function update(CustomerRequest $request, User $customer)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -139,7 +149,7 @@ class CustomerController extends Controller
      */
     public function toggleStatus(User $customer)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -159,7 +169,7 @@ class CustomerController extends Controller
      */
     public function destroy(User $customer)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -184,7 +194,7 @@ class CustomerController extends Controller
      */
     public function orderHistory(User $customer, Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 

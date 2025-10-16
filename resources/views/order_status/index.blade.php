@@ -22,7 +22,7 @@
                         <tr>
                             <td class="p-2">#{{ $order->id }}</td>
                             <td class="p-2 text-center">{{ $order->created_at->format('d/m/Y') }}</td>
-                            <td class="p-2 text-center text-orange-500">{{ number_format($order->total, 0, ',', '.') }}₫</td>
+                            <td class="p-2 text-center text-orange-500">{{ number_format($order->computed_total, 0, ',', '.') }}₫</td>
                             <td class="p-2 text-center"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">{{ ucfirst($order->status) }}</span></td>
                             @if(auth()->user() && auth()->user()->is_admin)
                             <td class="p-2 text-center">

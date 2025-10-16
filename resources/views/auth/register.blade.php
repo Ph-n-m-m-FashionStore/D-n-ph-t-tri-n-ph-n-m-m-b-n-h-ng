@@ -26,14 +26,11 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Mật khẩu</label>
-                    <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" required>
-                    <div class="password-requirements">
-                        <ul id="pw-req-list">
-                            <li id="pw-length"><i class="fa fa-check"></i> Ít nhất 8 ký tự</li>
-                            <li id="pw-case"><i class="fa fa-check"></i> Có chữ hoa và chữ thường</li>
-                            <li id="pw-special"><i class="fa fa-check"></i> Có số hoặc ký tự đặc biệt</li>
-                        </ul>
-                    </div>
+                    <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" class="@error('password') is-invalid @enderror" required>
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    @include('partials.password-requirements')
                 </div>
                 <div class="form-group">
                     <label for="password_confirmation">Nhập lại mật khẩu</label>

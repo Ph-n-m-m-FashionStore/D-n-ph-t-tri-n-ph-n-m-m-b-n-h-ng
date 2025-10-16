@@ -56,7 +56,8 @@ Route::post('/login', function() {
         // Check email verified
         /** @var \App\Models\User|null $authUser */
         $authUser = Auth::user();
-        if ($authUser && !$authUser->hasVerifiedEmail()) {
+        // Allow admin accounts to login without email verification
+        if ($authUser && !$authUser->hasVerifiedEmail() && ($authUser->role ?? null) !== 'admin') {
             Auth::logout();
             return back()->withErrors([
                 'email' => 'Bạn cần xác thực email trước khi đăng nhập. Vui lòng kiểm tra hộp thư.',
@@ -82,7 +83,7 @@ Route::post('/register', function() {
     $data = request()->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email',
-        'password' => 'required|string|min:8|confirmed',
+        'password' => ['required', 'string', 'confirmed', new \App\Rules\StrongPassword()],
         'phone' => 'nullable|string|max:20|unique:users,phone',
         'address' => 'nullable|string|max:500'
     ], [
@@ -135,7 +136,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Hồ sơ cá nhân
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.view');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Thông tin tài khoản (view & edit)
     Route::get('/account', [App\Http\Controllers\AccountController::class, 'show'])->name('account.show');
@@ -202,6 +205,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/reports/sales', [ReportController::class, 'sales'])->name('admin.reports.sales');
     Route::get('/admin/reports/products', [ReportController::class, 'products'])->name('admin.reports.products');
     Route::get('/admin/reports/customers', [ReportController::class, 'customers'])->name('admin.reports.customers');
+
+    // Admin Reviews Management
+    Route::resource('admin/reviews', \App\Http\Controllers\Admin\ReviewController::class)
+        ->only(['index', 'show', 'destroy'])
+        ->names([
+            'index' => 'admin.reviews.index',
+            'show' => 'admin.reviews.show',
+            'destroy' => 'admin.reviews.destroy',
+        ]);
 });
 
 // ==================== FALLBACK ROUTE ====================

@@ -59,21 +59,34 @@ class CartController extends Controller
             'status' => 'pending',
         ]);
 
-        // Tạo order items
+        // Tạo order items và lưu snapshot thông tin sản phẩm để đảm bảo chi tiết đơn hàng bất biến
         foreach ($cartItems as $item) {
+            $product = $item->product;
             \App\Models\OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item->product_id,
                 'quantity' => $item->quantity,
-                'price' => $item->product->price,
+                'price' => $product->price ?? 0,
+                // snapshot fields
+                'product_name' => $product->name ?? null,
+                'product_image' => $product->image_url ?? null,
+                'product_type' => $product->product_type ?? null,
+                'product_reference' => $product->reference_id ?? null,
+                'product_color_name' => optional($item->color)->name ?? null,
+                'product_size' => $product->size ?? null,
             ]);
         }
 
+        // Recompute persisted order total from order items (and model accessor)
+        $order->load('orderItems');
+        $order->total = $order->computed_total ?? $order->orderItems->sum(function($oi){ return ($oi->price ?? 0) * ($oi->quantity ?? 0); });
+        $order->save();
+
         // Tạo payment record (mặc định pending để chờ admin xác nhận)
-    DB::table('payments')->insert([
+        DB::table('payments')->insert([
             'order_id' => $order->id,
             'method' => $request->payment_type === 'ewallet' ? 'e-wallet' : ($request->payment_type === 'cod' ? 'COD' : 'bank-card'),
-            'amount' => $total,
+            'amount' => $order->total,
             'status' => 'pending',
             'created_at' => now(),
         ]);
@@ -81,7 +94,7 @@ class CartController extends Controller
         // Xóa giỏ hàng
         $user->cart->items()->delete();
 
-        // Chuyển sang màn hình chờ 30s để admin xác nhận
+        // Chuyển sang màn hình chờ để admin xác nhận
         return redirect()->route('orders.waiting', $order->id);
     }
 

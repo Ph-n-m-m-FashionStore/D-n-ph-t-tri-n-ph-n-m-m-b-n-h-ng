@@ -24,7 +24,7 @@
                         <tr>
                             <td class="p-2">#{{ $order->id }}</td>
                             <td class="p-2 text-center">{{ $order->created_at->format('d/m/Y') }}</td>
-                            <td class="p-2 text-center text-orange-500">{{ $order->total ? number_format($order->total, 0, ',', '.') : '---' }}₫</td>
+                            <td class="p-2 text-center text-orange-500">{{ $order->computed_total ? number_format($order->computed_total, 0, ',', '.') : '---' }}₫</td>
                             <td class="p-2 text-center"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">{{ ucfirst($order->status) }}</span></td>
                             <td class="p-2 text-center">{{ $order->payment_type ?? '---' }}</td>
                             <td class="p-2 text-center">
@@ -51,20 +51,29 @@
                                             $orderIndex = array_search($orderStatus, array_keys($steps));
                                         @endphp
                                         @foreach($steps as $key => $label)
-                                            @php
-                                                $stepIndex = array_search($key, array_keys($steps));
-                                                $color = $stepIndex < $orderIndex ? '#22c55e' : ($stepIndex == $orderIndex ? '#0ea5e9' : '#d1d5db');
-                                                $textColor = $stepIndex <= $orderIndex ? '#fff' : '#6b7280';
-                                            @endphp
-                                            <div style="display:flex;flex-direction:column;align-items:center;">
-                                                <div style="width:28px;height:28px;border-radius:50%;background:{{ $color }};color:{{ $textColor }};display:flex;align-items:center;justify-content:center;font-weight:bold;">
-                                                    {{ $loop->iteration }}
+                                                @php
+                                                    $stepIndex = array_search($key, array_keys($steps));
+                                                    // Determine classes instead of inline styles to avoid Blade in style attributes
+                                                    if ($stepIndex < $orderIndex) {
+                                                        $circleClass = 'bg-success text-white';
+                                                        $barClass = 'bg-success';
+                                                    } elseif ($stepIndex == $orderIndex) {
+                                                        $circleClass = 'bg-info text-white';
+                                                        $barClass = 'bg-light';
+                                                    } else {
+                                                        $circleClass = 'bg-light text-muted';
+                                                        $barClass = 'bg-light';
+                                                    }
+                                                @endphp
+                                                <div style="display:flex;flex-direction:column;align-items:center;">
+                                                    <div class="{{ $circleClass }}" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+                                                        {{ $loop->iteration }}
+                                                    </div>
+                                                    <div style="font-size:12px;margin-top:2px;">{{ $label }}</div>
                                                 </div>
-                                                <div style="font-size:12px;margin-top:2px;">{{ $label }}</div>
-                                            </div>
-                                            @if(!$loop->last)
-                                                <div style="width:32px;height:4px;background:{{ $stepIndex < $orderIndex ? '#22c55e' : '#d1d5db' }};align-self:center;border-radius:2px;"></div>
-                                            @endif
+                                                @if(!$loop->last)
+                                                    <div class="{{ $barClass }}" style="width:32px;height:4px;align-self:center;border-radius:2px;"></div>
+                                                @endif
                                         @endforeach
                                     </div>
                                 </div>

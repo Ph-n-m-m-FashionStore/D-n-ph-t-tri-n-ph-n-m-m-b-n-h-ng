@@ -36,8 +36,8 @@
                     @foreach(($order->orderItems ?? []) as $item)
                     <tr>
                         <td>
-                            <img src="{{ asset('images/' . basename($item->product->image_url ?? 'no-image.png')) }}" class="w-16 h-16 object-cover rounded border" />
-                            {{ $item->product->name ?? 'Sản phẩm' }}
+                            <img src="{{ $item->display_image }}" class="w-16 h-16 object-cover rounded border" />
+                            {{ $item->display_name ?? 'Sản phẩm' }}
                         </td>
                         <td>{{ number_format($item->price ?? 0, 0, ',', '.') }}₫</td>
                         <td>{{ $item->quantity ?? 0 }}</td>
@@ -46,8 +46,15 @@
                     @endforeach
                 </tbody>
             </table>
+            @php
+                $itemsTotal = collect($order->orderItems ?? [])->sum(function($it){ return ($it->price ?? 0) * ($it->quantity ?? 0); });
+                $shipping = $order->shipping_fee ?? $order->shipping ?? 0;
+                $discount = $order->discount ?? 0;
+                $tax = $order->tax ?? 0;
+                $computedTotal = $itemsTotal + $shipping - $discount + $tax;
+            @endphp
             <div class="text-right font-bold text-xl">
-                Tổng cộng: <span class="text-orange-500">{{ number_format($order->total ?? 0, 0, ',', '.') }}₫</span>
+                Tổng cộng: <span class="text-orange-500">{{ number_format($computedTotal ?? 0, 0, ',', '.') }}₫</span>
             </div>
             <div class="mt-6 text-center">
                 <a href="/orders" class="btn btn-outline-primary">Quay lại</a>

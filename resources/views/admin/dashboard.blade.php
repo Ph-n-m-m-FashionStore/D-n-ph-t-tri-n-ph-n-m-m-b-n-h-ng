@@ -90,6 +90,10 @@
         </div>
     </div>
 
+    {{-- Embed dashboard chart data as JSON to keep JS free of Blade directives --}}
+    <script id="dashboardRevenueLabels" type="application/json">{!! json_encode(array_map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); }, $dailyRevenue)) !!}</script>
+    <script id="dashboardRevenueValues" type="application/json">{!! json_encode(array_map(function($d){ return $d['revenue']; }, $dailyRevenue)) !!}</script>
+
     <!-- Quick Stats -->
     <div class="col-xl-4 col-lg-5 mb-4">
         <div class="card">
@@ -193,7 +197,7 @@
                                 </small>
                             </div>
                             <div class="text-end">
-                                <span class="fw-bold">{{ number_format($order->total, 0, ',', '.') }}₫</span>
+                                <span class="fw-bold">{{ number_format($order->computed_total, 0, ',', '.') }}₫</span>
                             </div>
                         </div>
                     @endforeach
@@ -216,21 +220,16 @@
 <script>
 // Revenue Chart
 const ctx = document.getElementById('revenueChart').getContext('2d');
+const dashboardLabels = JSON.parse(document.getElementById('dashboardRevenueLabels').textContent || '[]');
+const dashboardValues = JSON.parse(document.getElementById('dashboardRevenueValues').textContent || '[]');
+
 const revenueChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [
-            @foreach($dailyRevenue as $day)
-                '{{ \Carbon\Carbon::parse($day["date"])->format("d/m") }}',
-            @endforeach
-        ],
+        labels: dashboardLabels,
         datasets: [{
             label: 'Doanh thu (₫)',
-            data: [
-                @foreach($dailyRevenue as $day)
-                    {{ $day['revenue'] }},
-                @endforeach
-            ],
+            data: dashboardValues,
             borderColor: 'rgb(102, 126, 234)',
             backgroundColor: 'rgba(102, 126, 234, 0.1)',
             tension: 0.4,

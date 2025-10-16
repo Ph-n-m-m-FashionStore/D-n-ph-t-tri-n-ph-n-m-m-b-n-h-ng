@@ -5,6 +5,9 @@ use App\Models\Product;
 use App\Http\Requests\ProductRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -58,11 +61,14 @@ class ProductController extends Controller
      */
     public function adminIndex(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
-        $query = Product::with('reviews')->withCount('reviews');
+        // Load review aggregates: count and average rating so admin UI stays in sync with reviews
+        $query = Product::with('reviews')
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating');
         
         // Tìm kiếm
         if ($request->has('search') && $request->search) {
@@ -89,7 +95,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
         
@@ -101,7 +107,7 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -111,7 +117,7 @@ class ProductController extends Controller
         // Xử lý upload ảnh (hỗ trợ png, jpg, jpeg)
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            \Log::info('Upload image debug:', [
+            Log::info('Upload image debug:', [
                 'original_name' => $image->getClientOriginalName(),
                 'mime_type' => $image->getMimeType(),
                 'extension' => $image->getClientOriginalExtension(),
@@ -119,16 +125,16 @@ class ProductController extends Controller
             ]);
             $ext = strtolower($image->getClientOriginalExtension());
             if (!in_array($ext, ['png', 'jpg', 'jpeg'])) {
-                \Log::error('Image extension not allowed', ['ext' => $ext]);
+                Log::error('Image extension not allowed', ['ext' => $ext]);
                 return back()->withErrors(['image' => 'Định dạng ảnh không hợp lệ!']);
             }
             $imageName = time() . '_' . Str::slug($request->name) . '.' . $ext;
             $image->move(public_path('images'), $imageName);
-            \Log::info('Image moved to public/images', ['imageName' => $imageName]);
+            Log::info('Image moved to public/images', ['imageName' => $imageName]);
             $data['image_url'] = 'images/' . $imageName;
-            \Log::info('DEBUG image_url before save', ['image_url' => $data['image_url']]);
+            Log::info('DEBUG image_url before save', ['image_url' => $data['image_url']]);
         } else {
-            \Log::error('No image file found in request');
+            Log::error('No image file found in request');
         }
 
         $data['is_active'] = $request->has('is_active') ? 1 : 0;
@@ -145,7 +151,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
         
@@ -157,7 +163,7 @@ class ProductController extends Controller
      */
     public function update(ProductRequest $request, Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -180,6 +186,10 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        // Per requirement: update "created_at" timestamp whenever a product is edited successfully.
+        // We update the DB directly to set created_at to now() so that the created date reflects the last edit.
+        DB::table('products')->where('id', $product->id)->update(['created_at' => now()]);
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Sản phẩm đã được cập nhật thành công!');
     }
@@ -189,7 +199,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -209,7 +219,7 @@ class ProductController extends Controller
      */
     public function toggleStatus(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 

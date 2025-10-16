@@ -17,8 +17,9 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // Email is optional on the quick-profile save; validate only when present
             'email' => [
-                'required',
+                'sometimes',
                 'string',
                 'lowercase',
                 'email',
@@ -27,6 +28,10 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:255'],
+            // Additional admin/shop profile fields (optional)
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'tax_id' => ['nullable', 'string', 'max:100'],
+            'owner_address' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

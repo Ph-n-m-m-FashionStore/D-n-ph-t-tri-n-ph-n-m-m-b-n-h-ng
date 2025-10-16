@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminOrderController extends Controller
 {
     public function index()
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -23,7 +24,7 @@ class AdminOrderController extends Controller
 
     public function show(Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -33,7 +34,7 @@ class AdminOrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -48,7 +49,7 @@ class AdminOrderController extends Controller
 
     public function confirmPayment(Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -56,10 +57,17 @@ class AdminOrderController extends Controller
         if ($order->payment) {
             $order->payment->update(['status' => 'paid']);
         } else {
+            // compute amount from items to ensure consistency with displayed detail
+            $itemsTotal = $order->orderItems->sum(function($it) { return ($it->price ?? 0) * ($it->quantity ?? 0); });
+            $shipping = $order->shipping_fee ?? $order->shipping ?? 0;
+            $discount = $order->discount ?? 0;
+            $tax = $order->tax ?? 0;
+            $amount = $itemsTotal + $shipping - $discount + $tax;
+
             Payment::create([
                 'order_id' => $order->id,
                 'method' => $order->payment_type ?? 'bank-transfer',
-                'amount' => $order->total,
+                'amount' => $amount,
                 'status' => 'paid'
             ]);
         }

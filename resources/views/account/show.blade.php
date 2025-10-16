@@ -34,21 +34,35 @@
 
             <div class="mb-3">
                 <label class="form-label">Mật khẩu hiện tại</label>
-                <input type="password" name="current_password" class="form-control" required>
+                <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" required>
+                @error('current_password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Mật khẩu mới</label>
-                <input type="password" name="password" class="form-control" required>
+                <input type="password" name="password" id="new_password" class="form-control @error('password') is-invalid @enderror" required>
+                @error('password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+                @include('partials.password-requirements')
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Xác nhận mật khẩu mới</label>
-                <input type="password" name="password_confirmation" class="form-control" required>
+                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" required>
+                <div id="password-match-feedback" class="mt-1" style="display:none;"></div>
+                @error('password_confirmation')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <button type="submit" class="btn btn-primary btn-sm">Đổi mật khẩu</button>
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
 @endsection

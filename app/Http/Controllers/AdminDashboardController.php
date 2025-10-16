@@ -6,18 +6,22 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminDashboardController extends Controller
 {
     public function dashboard()
     {
         // Kiểm tra admin
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
+        $completedOrders = Order::where('status', 'completed')->with('orderItems');
+        $totalRevenue = $completedOrders->get()->sum(function($o) { return $o->computed_total ?? ($o->total ?? 0); });
+
         $stats = [
-            'total_revenue' => Order::where('status', 'completed')->sum('total'),
+            'total_revenue' => $totalRevenue,
             'total_orders' => Order::count(),
             'total_customers' => User::where('role', 'customer')->count(),
             'total_products' => Product::count(),
@@ -32,7 +36,7 @@ class AdminDashboardController extends Controller
 
     public function salesReport(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 

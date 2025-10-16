@@ -69,7 +69,7 @@
                         <td>#{{ $order->id }}</td>
                         <td>{{ $order->user->name ?? $order->name }}</td>
                         <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
-                        <td>{{ number_format($order->total ?? 0, 0, ',', '.') }}₫</td>
+                        <td>{{ number_format($order->computed_total ?? 0, 0, ',', '.') }}₫</td>
                         <td><span class="badge bg-secondary">{{ ucfirst($order->status) }}</span></td>
                         <td><span class="badge {{ optional($order->payment)->status==='paid'?'bg-success':'bg-warning text-dark' }}">{{ optional($order->payment)->status ?? 'pending' }}</span></td>
                         <td>

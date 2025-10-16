@@ -35,20 +35,29 @@
                 <div class="bg-orange-100 border-l-4 border-orange-500 p-2 mb-4">
                     <span class="font-bold text-orange-700">Khuyến mãi:</span> Nhập mã <span class="font-bold">SALE50</span> giảm 50% cho đơn hàng đầu tiên!
                 </div>
+                @php
+                    $reviewsQuery = $product->reviews();
+                    $reviewsCount = $reviewsQuery->count();
+                    $avgRating = $reviewsCount ? round($reviewsQuery->avg('rating'), 1) : 0;
+                @endphp
                 <div class="flex items-center mb-2">
-                    <span class="font-bold mr-2">4.5</span>
-                    <span class="text-yellow-400">
+                    <span class="font-bold mr-2">{{ number_format($avgRating, 1) }}</span>
+                    <span class="text-warning">
                         @for($i = 1; $i <= 5; $i++)
-                            @if($i <= floor(4.5))
+                            @php
+                                $full = $i <= floor($avgRating);
+                                $half = (!$full && ($i - $avgRating) < 1 && ($avgRating - floor($avgRating)) >= 0.5);
+                            @endphp
+                            @if($full)
                                 <i class="fa fa-star"></i>
-                            @elseif($i - 4.5 < 1)
+                            @elseif($half)
                                 <i class="fa fa-star-half-alt"></i>
                             @else
                                 <i class="fa fa-star-o"></i>
                             @endif
                         @endfor
                     </span>
-                    <span class="ml-2 text-gray-600">(120 đánh giá)</span>
+                    <span class="ml-2 text-gray-600">({{ $reviewsCount }} đánh giá)</span>
                 </div>
             </div>
         </div>
@@ -56,18 +65,36 @@
     <!-- Bình luận, đánh giá -->
     <div class="bg-white rounded-lg shadow p-6 mt-8" id="reviewBox" style="transition:transform 0.3s;">
         <h2 class="text-lg font-semibold mb-4">Đánh giá sản phẩm</h2>
+        @php
+            $canReview = false;
+            if (Auth::check()) {
+                $canReview = \App\Models\Order::where('user_id', Auth::id())
+                    ->where('status', 'completed')
+                    ->whereHas('orderItems', function($q) use ($product) {
+                        $q->where('product_id', $product->id);
+                    })->exists();
+            }
+        @endphp
+
         @auth
-        <form method="POST" action="{{ route('reviews.store', $product->id) }}">
-            @csrf
-            <textarea name="comment" class="w-full border rounded p-2" rows="3" placeholder="Viết đánh giá của bạn..." id="reviewTextarea" required></textarea>
-            <div class="d-flex align-items-center gap-2 mt-2">
-                <label>Chấm sao:</label>
-                <select name="rating" class="form-select w-auto">
-                    @for($i=5;$i>=1;$i--)<option value="{{ $i }}">{{ $i }}</option>@endfor
-                </select>
-            </div>
-            <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded mt-2">Gửi đánh giá</button>
-        </form>
+            @if($canReview)
+                <form method="POST" action="{{ route('reviews.store', $product->id) }}">
+                    @csrf
+                    <textarea name="comment" class="w-full border rounded p-2 @error('comment') is-invalid @enderror" rows="3" placeholder="Viết đánh giá của bạn..." id="reviewTextarea" required>{{ old('comment') }}</textarea>
+                    @error('comment')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <label>Chấm sao:</label>
+                        <select name="rating" class="form-select w-auto">
+                            @for($i=5;$i>=1;$i--)<option value="{{ $i }}">{{ $i }}</option>@endfor
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded mt-2">Gửi đánh giá</button>
+                </form>
+            @else
+                <p class="text-muted">Bạn chỉ có thể đánh giá sản phẩm này sau khi đơn hàng chứa sản phẩm được xác nhận hoàn tất.</p>
+            @endif
         @else
             <p>Vui lòng <a href="{{ route('login') }}" class="text-blue-500">đăng nhập</a> để đánh giá.</p>
         @endauth

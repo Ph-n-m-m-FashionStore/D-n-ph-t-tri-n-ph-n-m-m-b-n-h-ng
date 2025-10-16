@@ -20,7 +20,16 @@
         <tbody>
             @foreach($productTypeStats as $product)
             <tr>
-                <td>{{ $product->product_type }}</td>
+                <td>
+                    @php
+                        $typeLabels = [
+                            'clothing' => 'Quần áo',
+                            'accessories' => 'Phụ kiện',
+                            'shoes' => 'Giày'
+                        ];
+                    @endphp
+                    {{ $typeLabels[$product->product_type] ?? $product->product_type }}
+                </td>
                 <td>{{ $product->id }}</td>
                 <td>{{ $product->name }}</td>
                 <td>{{ number_format($product->price, 0, ',', '.') }}₫</td>

@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class AdminProductController extends Controller
 {
     public function create()
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -19,7 +20,7 @@ class AdminProductController extends Controller
 
     public function store(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -55,7 +56,7 @@ class AdminProductController extends Controller
 
     public function edit(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -64,7 +65,7 @@ class AdminProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -93,7 +94,7 @@ class AdminProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 

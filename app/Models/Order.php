@@ -68,4 +68,17 @@ class Order extends Model
     {
         return $this->phone ?: $this->user->phone;
     }
+
+    /**
+     * Compute total from order items + shipping - discount + tax
+     * This keeps displayed totals consistent with item rows.
+     */
+    public function getComputedTotalAttribute()
+    {
+        $itemsTotal = $this->orderItems->sum(function($it) { return ($it->price ?? 0) * ($it->quantity ?? 0); });
+        $shipping = $this->shipping_fee ?? $this->shipping ?? 0;
+        $discount = $this->discount ?? 0;
+        $tax = $this->tax ?? 0;
+        return $itemsTotal + $shipping - $discount + $tax;
+    }
 }

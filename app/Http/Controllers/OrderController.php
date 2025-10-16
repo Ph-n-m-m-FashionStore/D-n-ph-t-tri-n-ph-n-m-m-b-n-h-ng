@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Http\Requests\OrderStatusRequest;
@@ -12,7 +13,7 @@ class OrderController extends Controller
     
     public function show($id)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         
         // Admin có thể xem tất cả đơn hàng
         if ($user->role === 'admin') {
@@ -32,7 +33,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
+    $user = Auth::user();
         
         if (!$user) {
             return redirect()->route('login')->with('error', 'Bạn cần đăng nhập để xem đơn hàng.');
@@ -70,7 +71,7 @@ class OrderController extends Controller
      */
     public function statuses(Request $request)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
@@ -95,7 +96,7 @@ class OrderController extends Controller
      */
     public function waiting(Order $order)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         if (!$user || $order->user_id !== $user->id) {
             abort(403);
         }
@@ -108,7 +109,7 @@ class OrderController extends Controller
      */
     public function status(Order $order)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         if (!$user || $order->user_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -122,7 +123,7 @@ class OrderController extends Controller
     // Hủy đơn hàng (chỉ cho user)
     public function cancel(Request $request, $id)
     {
-        $user = auth()->user();
+    $user = Auth::user();
         $order = Order::where('id', $id)->where('user_id', $user->id)->firstOrFail();
 
         // Chỉ cho phép hủy đơn hàng ở trạng thái pending
@@ -166,7 +167,7 @@ class OrderController extends Controller
     public function adminIndex(Request $request)
     {
         // Kiểm tra quyền admin
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -218,7 +219,7 @@ class OrderController extends Controller
      */
     public function adminShow(Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -231,15 +232,34 @@ class OrderController extends Controller
      */
     public function updateStatus(OrderStatusRequest $request, Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
         $oldStatus = $order->status;
-        $order->update(['status' => $request->status]);
+        $newStatus = $request->status;
 
-        // Xử lý business logic khi thay đổi trạng thái
-        $this->handleStatusChange($order, $oldStatus, $request->status);
+        // Define allowed forward-only order of statuses
+        $statusOrder = ['pending' => 0, 'confirmed' => 1, 'shipping' => 2, 'completed' => 3, 'canceled' => 4];
+
+        // If old status is not recognized, block change
+        if (!isset($statusOrder[$oldStatus]) || !isset($statusOrder[$newStatus])) {
+            return redirect()->back()->with('error', 'Trạng thái không hợp lệ.');
+        }
+
+        // Disallow transitions to an earlier status
+        if ($statusOrder[$newStatus] < $statusOrder[$oldStatus]) {
+            return redirect()->back()->with('error', 'Không thể chuyển về trạng thái trước đó.');
+        }
+
+        // Once canceled, do not allow reverting to other statuses
+        if ($oldStatus === 'canceled' && $newStatus !== 'canceled') {
+            return redirect()->back()->with('error', 'Đơn hàng đã bị hủy, không thể phục hồi sang trạng thái khác.');
+        }
+
+        // Update status and handle business logic
+        $order->update(['status' => $newStatus]);
+        $this->handleStatusChange($order, $oldStatus, $newStatus);
 
         return redirect()->back()->with('success', 'Trạng thái đơn hàng đã được cập nhật!');
     }
@@ -249,7 +269,7 @@ class OrderController extends Controller
      */
     public function confirmPayment(Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -260,7 +280,7 @@ class OrderController extends Controller
             Payment::create([
                 'order_id' => $order->id,
                 'method' => $order->payment_type ?? 'COD',
-                'amount' => $order->total,
+                'amount' => $order->computed_total,
                 'status' => 'paid'
             ]);
         }
@@ -278,7 +298,7 @@ class OrderController extends Controller
      */
     public function updateOrderInfo(Request $request, Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -299,7 +319,7 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 

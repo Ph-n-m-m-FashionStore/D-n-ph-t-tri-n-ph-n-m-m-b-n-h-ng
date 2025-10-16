@@ -64,6 +64,7 @@
                             <th>Hình ảnh</th>
                             <th>Tên sản phẩm</th>
                             <th>Loại</th>
+                            <th>Tồn kho</th>
                             <th>Giá</th>
                             <th>Trạng thái</th>
                             <th>Đánh giá</th>
@@ -94,6 +95,9 @@
                                     </span>
                                 </td>
                                 <td>
+                                    <span class="fw-bold">{{ $product->stock ?? 0 }}</span>
+                                </td>
+                                <td>
                                     <span class="fw-bold text-success">
                                         {{ number_format($product->price, 0, ',', '.') }}₫
                                     </span>
@@ -109,7 +113,8 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-star text-warning me-1"></i>
-                                        <span>{{ $product->reviews_count }}</span>
+                                        <span>{{ number_format($product->reviews_avg_rating, 1) ?? '0.0' }}</span>
+                                        <small class="text-muted ms-2">({{ $product->reviews_count }})</small>
                                     </div>
                                 </td>
                                 <td>
@@ -124,7 +129,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                onclick="confirmDelete({{ $product->id }})" title="Xóa">
+                                                    data-product-id="{{ $product->id }}" onclick="confirmDeleteProductFromData(this)" title="Xóa">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -165,7 +170,8 @@
 
 @section('scripts')
 <script>
-function confirmDelete(productId) {
+function confirmDeleteProductFromData(el) {
+    var productId = el.dataset.productId;
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác!')) {
         document.getElementById('delete-form-' + productId).submit();
     }

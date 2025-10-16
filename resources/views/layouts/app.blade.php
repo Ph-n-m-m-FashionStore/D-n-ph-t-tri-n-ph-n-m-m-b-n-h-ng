@@ -235,5 +235,7 @@
             }
         });
     </script>
+    {{-- Per-page scripts --}}
+    @yield('scripts')
 </body>
 </html>

@@ -9,49 +9,6 @@
         <h4 class="mb-0">Báo cáo doanh thu</h4>
         <p class="text-muted mb-0">Thống kê và phân tích doanh thu bán hàng</p>
     </div>
-</div>
-
-<!-- Date Range Filter -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0">
-            <i class="fas fa-calendar me-2"></i>
-            Bộ lọc thời gian
-        </h5>
-    </div>
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Từ ngày</label>
-                <input type="date" class="form-control" name="start_date" value="{{ $startDate }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Đến ngày</label>
-                <input type="date" class="form-control" name="end_date" value="{{ $endDate }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i>
-                        Cập nhật báo cáo
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="text-primary">{{ number_format($stats['total_revenue'], 0, ',', '.') }}₫</h5>
-                <small class="text-muted">Tổng doanh thu</small>
-            </div>
-        </div>
-    </div>
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
@@ -93,6 +50,10 @@
             </div>
         </div>
     </div>
+
+    {{-- Embed chart data as JSON so Blade isn't injected inside JS expressions --}}
+    <script id="revenueLabelsData" type="application/json">{!! json_encode(array_map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); }, $dailyRevenue)) !!}</script>
+    <script id="revenueValuesData" type="application/json">{!! json_encode(array_map(function($d){ return $d['revenue']; }, $dailyRevenue)) !!}</script>
 
     <!-- Top Products -->
     <div class="col-xl-4 col-lg-5 mb-4">
@@ -184,7 +145,7 @@
                                         </td>
                                         <td>
                                             <span class="fw-bold text-success">
-                                                {{ number_format($order->total, 0, ',', '.') }}₫
+                                                {{ number_format($order->computed_total, 0, ',', '.') }}₫
                                             </span>
                                         </td>
                                         <td>
@@ -230,21 +191,16 @@
 <script>
 // Revenue Chart
 const ctx = document.getElementById('revenueChart').getContext('2d');
+const revenueLabels = JSON.parse(document.getElementById('revenueLabelsData').textContent || '[]');
+const revenueData = JSON.parse(document.getElementById('revenueValuesData').textContent || '[]');
+
 const revenueChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [
-            @foreach($dailyRevenue as $day)
-                '{{ \Carbon\Carbon::parse($day["date"])->format("d/m") }}',
-            @endforeach
-        ],
+        labels: revenueLabels,
         datasets: [{
             label: 'Doanh thu (₫)',
-            data: [
-                @foreach($dailyRevenue as $day)
-                    {{ $day['revenue'] }},
-                @endforeach
-            ],
+            data: revenueData,
             borderColor: 'rgb(102, 126, 234)',
             backgroundColor: 'rgba(102, 126, 234, 0.1)',
             tension: 0.4,

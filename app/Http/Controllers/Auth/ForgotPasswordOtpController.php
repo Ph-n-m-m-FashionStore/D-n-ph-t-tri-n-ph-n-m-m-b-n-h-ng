@@ -69,7 +69,7 @@ class ForgotPasswordOtpController extends Controller
             return redirect()->route('password.otp.email');
         }
         $request->validate([
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', new \App\Rules\StrongPassword()],
         ]);
         $email = Session::get('otp_email');
         $user = User::where('email', $email)->first();

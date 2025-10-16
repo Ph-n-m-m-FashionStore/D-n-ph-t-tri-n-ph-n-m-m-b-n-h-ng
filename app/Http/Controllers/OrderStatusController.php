@@ -2,13 +2,14 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 
 class OrderStatusController extends Controller
 {
     // Hiển thị trạng thái đơn hàng
     public function index()
     {
-        $orders = Order::where('user_id', auth()->id())->get();
+    $orders = Order::where('user_id', Auth::id())->get();
         return view('order_status.index', compact('orders'));
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ProductRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class ProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'admin';
+    return Auth::check() && Auth::user() && Auth::user()->role === 'admin';
     }
 
     /**
@@ -23,6 +24,7 @@ class ProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'product_type' => 'required|string|in:clothing,accessories,shoes',
             'is_active' => 'boolean'
         ];
@@ -56,6 +58,9 @@ class ProductRequest extends FormRequest
             'image.image' => 'File phải là ảnh.',
             'image.mimes' => 'Ảnh phải có định dạng PNG, JPG hoặc JPEG.',
             'image.max' => 'Kích thước ảnh không được vượt quá 2MB.',
+            'stock.required' => 'Tồn kho là bắt buộc.',
+            'stock.integer' => 'Tồn kho phải là số nguyên.',
+            'stock.min' => 'Tồn kho phải lớn hơn hoặc bằng 0.',
         ];
     }
 }

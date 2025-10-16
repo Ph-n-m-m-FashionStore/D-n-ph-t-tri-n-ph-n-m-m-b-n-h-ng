@@ -62,7 +62,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Ngày tạo:</strong></td>
-                                <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Phương thức TT:</strong></td>
@@ -104,12 +104,12 @@
                             @foreach($order->orderItems as $item)
                                 <tr>
                                     <td>
-                                        <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" 
-                                             class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <img src="{{ $item->display_image }}" alt="{{ $item->display_name }}" 
+                                        class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                     </td>
                                     <td>
-                                        <h6 class="mb-1">{{ $item->product->name }}</h6>
-                                        <small class="text-muted">{{ $item->product->product_type }}</small>
+                                        <h6 class="mb-1">{{ $item->display_name }}</h6>
+                                        <small class="text-muted">{{ $item->display_type }}</small>
                                     </td>
                                     <td>{{ number_format($item->price, 0, ',', '.') }}₫</td>
                                     <td>{{ $item->quantity }}</td>
@@ -118,9 +118,16 @@
                             @endforeach
                         </tbody>
                         <tfoot>
+                            @php
+                                $itemsTotal = $order->orderItems->sum(function($it) { return ($it->price ?? 0) * ($it->quantity ?? 0); });
+                                $shipping = $order->shipping_fee ?? $order->shipping ?? 0;
+                                $discount = $order->discount ?? 0;
+                                $tax = $order->tax ?? 0;
+                                $computedTotal = $itemsTotal + $shipping - $discount + $tax;
+                            @endphp
                             <tr class="table-light">
                                 <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
-                                <td class="fw-bold text-success">{{ number_format($order->total, 0, ',', '.') }}₫</td>
+                                <td class="fw-bold text-success">{{ number_format($computedTotal, 0, ',', '.') }}₫</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -146,7 +153,7 @@
                             <h5 class="text-success">Đã thanh toán</h5>
                             <p class="text-muted">Phương thức: {{ $order->payment->method }}</p>
                             <small class="text-muted">
-                                {{ $order->payment->updated_at->format('d/m/Y H:i') }}
+                                {{ optional(optional($order->payment)->updated_at)->format('d/m/Y H:i') }}
                             </small>
                         @else
                             <i class="fas fa-clock fa-3x text-warning mb-3"></i>
@@ -185,57 +192,74 @@
                 </h5>
             </div>
             <div class="card-body">
-                @if($order->status === 'pending')
-                    <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" class="mb-2">
-                        @csrf
-                        <input type="hidden" name="status" value="confirmed">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-check-circle me-2"></i>
-                            Xác nhận đơn hàng
-                        </button>
-                    </form>
-                @endif
+                    <!-- Status stepper -->
+                    @php
+                        $steps = ['pending' => 'Chờ xử lý', 'confirmed' => 'Đã xác nhận', 'shipping' => 'Đang giao', 'completed' => 'Hoàn thành', 'canceled' => 'Đã hủy'];
+                    @endphp
+                    <div class="mb-3">
+                        <div class="order-stepper">
+                            @foreach($steps as $key => $label)
+                                @php
+                                    $isActive = $order->status === $key;
+                                    $isDone = in_array($key, ['pending','confirmed','shipping','completed']) && array_search($key, array_keys($steps)) <= array_search($order->status, array_keys($steps));
+                                @endphp
+                                <span class="badge rounded-pill {{ $isActive ? 'bg-primary' : ($isDone ? 'bg-success' : 'bg-secondary') }}">
+                                    {{ $label }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
 
-                @if($order->status === 'confirmed')
-                    <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" class="mb-2">
-                        @csrf
-                        <input type="hidden" name="status" value="shipping">
-                        <button type="submit" class="btn btn-info w-100">
-                            <i class="fas fa-truck me-2"></i>
-                            Bắt đầu giao hàng
-                        </button>
-                    </form>
-                @endif
+                    <!-- Forward-only actions: show only the next valid transition -->
+                    <div class="admin-action-buttons d-grid gap-2">
+                        @if($order->status === 'pending')
+                            <form method="POST" action="{{ route('admin.orders.update-status', $order) }}">
+                                @csrf
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="ms-2">Chuyển sang: Đã xác nhận</span>
+                                </button>
+                            </form>
+                        @elseif($order->status === 'confirmed')
+                                <form method="POST" action="{{ route('admin.orders.update-status', $order) }}">
+                                @csrf
+                                <input type="hidden" name="status" value="shipping">
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fas fa-truck"></i>
+                                    <span class="ms-2">Chuyển sang: Đang giao</span>
+                                </button>
+                            </form>
+                        @elseif($order->status === 'shipping')
+                                <form method="POST" action="{{ route('admin.orders.update-status', $order) }}">
+                                @csrf
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check-double"></i>
+                                    <span class="ms-2">Chuyển sang: Hoàn thành</span>
+                                </button>
+                            </form>
+                        @endif
 
-                @if($order->status === 'shipping')
-                    <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" class="mb-2">
-                        @csrf
-                        <input type="hidden" name="status" value="completed">
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-check-double me-2"></i>
-                            Hoàn thành đơn hàng
-                        </button>
-                    </form>
-                @endif
+                        @if(!in_array($order->status, ['completed', 'canceled']))
+                            <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" 
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
+                                @csrf
+                                <input type="hidden" name="status" value="canceled">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-times"></i>
+                                    <span class="ms-2">Hủy đơn hàng</span>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
 
-                @if(!in_array($order->status, ['completed', 'canceled']))
-                    <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" 
-                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
-                        @csrf
-                        <input type="hidden" name="status" value="canceled">
-                        <button type="submit" class="btn btn-danger w-100">
-                            <i class="fas fa-times me-2"></i>
-                            Hủy đơn hàng
-                        </button>
-                    </form>
-                @endif
-
-                <hr>
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-arrow-left me-2"></i>
-                    Quay lại danh sách
-                </a>
-            </div>
+                    <hr>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Quay lại danh sách
+                    </a>
+                </div>
         </div>
 
         <!-- Order Timeline -->
@@ -248,20 +272,20 @@
             </div>
             <div class="card-body">
                 <div class="timeline">
-                    <div class="timeline-item">
+                            <div class="timeline-item">
                         <div class="timeline-marker bg-primary"></div>
                         <div class="timeline-content">
                             <h6>Đơn hàng được tạo</h6>
-                            <small class="text-muted">{{ $order->created_at->format('d/m/Y H:i') }}</small>
+                                    <small class="text-muted">{{ optional($order->created_at)->format('d/m/Y H:i') }}</small>
                         </div>
                     </div>
                     
-                    @if($order->status !== 'pending')
+                            @if($order->status !== 'pending')
                         <div class="timeline-item">
                             <div class="timeline-marker bg-info"></div>
                             <div class="timeline-content">
                                 <h6>Đơn hàng được xác nhận</h6>
-                                <small class="text-muted">{{ $order->updated_at->format('d/m/Y H:i') }}</small>
+                                        <small class="text-muted">{{ optional($order->updated_at)->format('d/m/Y H:i') }}</small>
                             </div>
                         </div>
                     @endif

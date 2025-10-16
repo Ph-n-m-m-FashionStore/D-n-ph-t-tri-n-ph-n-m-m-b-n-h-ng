@@ -6,10 +6,11 @@
         @csrf
         <div class="mb-3">
             <label for="password" class="form-label">Mật khẩu mới</label>
-            <input type="password" name="password" id="password" class="form-control" required>
+            <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required>
             @error('password')
-                <span class="text-danger">{{ $message }}</span>
+                <div class="invalid-feedback">{{ $message }}</div>
             @enderror
+            @include('partials.password-requirements')
         </div>
         <div class="mb-3">
             <label for="password_confirmation" class="form-label">Xác nhận mật khẩu</label>
@@ -17,5 +18,6 @@
         </div>
         <button type="submit" class="btn btn-success">Đổi mật khẩu</button>
     </form>
+    
 </div>
 @endsection

@@ -25,6 +25,20 @@ class ProfileController extends Controller
     }
 
     /**
+     * Show the authenticated user's profile.
+     */
+    public function show(Request $request): View
+    {
+        $user = $request->user();
+        // reuse orders query in edit for consistency
+        $orders = $user->orders()->with(['items.product', 'items.color'])->orderByDesc('created_at')->get();
+        return view('profile.show', [
+            'user' => $user,
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
@@ -37,7 +51,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    return Redirect::route('profile.view')->with('success', 'Đã cập nhật thông tin.');
     }
 
     /**
@@ -59,5 +73,29 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Update password from profile page.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'current_password' => ['required'],
+            'password' => ['required','confirmed', new \App\Rules\StrongPassword()],
+        ]);
+
+        $user = $request->user();
+
+        if (!
+            \Illuminate\Support\Facades\Hash::check($request->input('current_password'), $user->password)
+        ) {
+            return Redirect::route('profile.view')->with('error', 'Mật khẩu hiện tại không đúng.');
+        }
+
+        $user->password = bcrypt($request->input('password'));
+        $user->save();
+
+        return Redirect::route('profile.view')->with('success', 'Đổi mật khẩu thành công.');
     }
 }

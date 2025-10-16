@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
@@ -16,7 +17,7 @@ class ReportController extends Controller
      */
     public function sales(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -60,7 +61,7 @@ class ReportController extends Controller
      */
     public function products(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -128,7 +129,7 @@ class ReportController extends Controller
      */
     public function customers(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -138,20 +139,24 @@ class ReportController extends Controller
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
 
-        // Khách hàng mua nhiều nhất
+        // Khách hàng mua nhiều nhất - compute from order->computed_total
         $topCustomers = User::where('role', 'customer')
-            ->withCount(['orders as total_orders' => function($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate])
-                      ->where('status', 'completed');
+            ->with(['orders' => function($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->where('status', 'completed')
+                  ->with('orderItems');
             }])
-            ->withSum(['orders as total_spent' => function($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate])
-                      ->where('status', 'completed');
-            }], 'total')
-            ->having('total_orders', '>', 0)
-            ->orderBy('total_spent', 'desc')
+            ->get()
+            ->map(function($u) {
+                $total = $u->orders->sum(function($o){ return $o->computed_total ?? ($o->total ?? 0); });
+                $u->computed_report_total = $total;
+                $u->computed_orders_count = $u->orders->count();
+                return $u;
+            })
+            ->filter(function($u){ return $u->computed_orders_count > 0; })
+            ->sortByDesc('computed_report_total')
             ->take(20)
-            ->get();
+            ->values();
 
         // Khách hàng mới
         $newCustomers = User::where('role', 'customer')
@@ -161,19 +166,27 @@ class ReportController extends Controller
             ->latest()
             ->get();
 
-        // Thống kê khách hàng
+        // Thống kê khách hàng using computed totals
+        $totalCustomers = User::where('role', 'customer')->count();
+        $activeCustomers = User::where('role', 'customer')
+            ->whereHas('orders', function($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->where('status', 'completed');
+            })->count();
+
+        // Compute avg order value from computed_total
+        $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'completed')
+            ->with('orderItems')
+            ->get();
+        $totalRevenue = $orders->sum(function($o){ return $o->computed_total ?? ($o->total ?? 0); });
+        $avgOrderValue = $orders->count() ? ($totalRevenue / $orders->count()) : 0;
+
         $customerStats = [
-            'total_customers' => User::where('role', 'customer')->count(),
+            'total_customers' => $totalCustomers,
             'new_customers' => $newCustomers->count(),
-            'active_customers' => User::where('role', 'customer')
-                ->whereHas('orders', function($q) use ($startDate, $endDate) {
-                    $q->whereBetween('created_at', [$startDate, $endDate])
-                      ->where('status', 'completed');
-                })
-                ->count(),
-            'avg_order_value' => Order::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', 'completed')
-                ->avg('total')
+            'active_customers' => $activeCustomers,
+            'avg_order_value' => $avgOrderValue
         ];
 
         return view('admin.reports.customers', compact(
@@ -190,7 +203,7 @@ class ReportController extends Controller
      */
     public function dashboard()
     {
-        if (auth()->user()->role !== 'admin') {
+        if (Auth::user() && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access.');
         }
 
@@ -201,14 +214,20 @@ class ReportController extends Controller
         $lastMonthEnd = $today->copy()->subMonth()->endOfMonth();
 
         // Thống kê tổng quan
+        // Use computed_total on orders to stay consistent with order detail computation
+        $allCompletedOrders = Order::where('status', 'completed')->with('orderItems');
         $stats = [
-            'total_revenue' => Order::where('status', 'completed')->sum('total'),
+            'total_revenue' => $allCompletedOrders->get()->sum(function($o) { return $o->computed_total ?? ($o->total ?? 0); }),
             'monthly_revenue' => Order::where('status', 'completed')
                 ->whereBetween('created_at', [$thisMonth, $thisMonthEnd])
-                ->sum('total'),
+                ->with('orderItems')
+                ->get()
+                ->sum(function($o){ return $o->computed_total ?? ($o->total ?? 0); }),
             'last_month_revenue' => Order::where('status', 'completed')
                 ->whereBetween('created_at', [$lastMonth, $lastMonthEnd])
-                ->sum('total'),
+                ->with('orderItems')
+                ->get()
+                ->sum(function($o){ return $o->computed_total ?? ($o->total ?? 0); }),
             'total_orders' => Order::count(),
             'pending_orders' => Order::where('status', 'pending')->count(),
             'total_customers' => User::where('role', 'customer')->count(),
@@ -226,9 +245,11 @@ class ReportController extends Controller
         $dailyRevenue = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = $today->copy()->subDays($i);
-            $revenue = Order::where('status', 'completed')
+            $ordersOnDate = Order::where('status', 'completed')
                 ->whereDate('created_at', $date)
-                ->sum('total');
+                ->with('orderItems')
+                ->get();
+            $revenue = $ordersOnDate->sum(function($o) { return $o->computed_total ?? ($o->total ?? 0); });
             $dailyRevenue[] = [
                 'date' => $date->format('Y-m-d'),
                 'revenue' => $revenue
@@ -266,29 +287,41 @@ class ReportController extends Controller
     private function getSalesStats($startDate, $endDate)
     {
         $orders = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'completed');
+            ->where('status', 'completed')
+            ->with('orderItems')
+            ->get();
+
+        $totalRevenue = $orders->sum(function($o) { return $o->computed_total ?? ($o->total ?? 0); });
+        $totalOrders = $orders->count();
+        $avgOrderValue = $totalOrders ? ($totalRevenue / $totalOrders) : 0;
+        $totalCustomers = $orders->unique('user_id')->count();
 
         return [
-            'total_revenue' => $orders->sum('total'),
-            'total_orders' => $orders->count(),
-            'avg_order_value' => $orders->avg('total'),
-            'total_customers' => $orders->distinct('user_id')->count()
+            'total_revenue' => $totalRevenue,
+            'total_orders' => $totalOrders,
+            'avg_order_value' => $avgOrderValue,
+            'total_customers' => $totalCustomers
         ];
     }
 
     private function getDailyRevenue($startDate, $endDate)
     {
-        $dailyRevenue = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'completed')
-            ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(total) as revenue')
-            )
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        return $dailyRevenue;
+        $days = [];
+        $cursor = Carbon::parse($startDate->format('Y-m-d'));
+        $end = Carbon::parse($endDate->format('Y-m-d'));
+        while ($cursor->lte($end)) {
+            $ordersOnDate = Order::whereDate('created_at', $cursor)
+                ->where('status', 'completed')
+                ->with('orderItems')
+                ->get();
+            $revenue = $ordersOnDate->sum(function($o) { return $o->computed_total ?? ($o->total ?? 0); });
+            $days[] = [
+                'date' => $cursor->format('Y-m-d'),
+                'revenue' => $revenue
+            ];
+            $cursor->addDay();
+        }
+        return collect($days);
     }
 
     private function getTopProducts($startDate, $endDate)

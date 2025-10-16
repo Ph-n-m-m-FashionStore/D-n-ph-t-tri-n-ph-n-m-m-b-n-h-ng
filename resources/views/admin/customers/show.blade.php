@@ -200,7 +200,7 @@
                                         </td>
                                         <td>
                                             <span class="fw-bold text-success">
-                                                {{ number_format($order->total, 0, ',', '.') }}₫
+                                                {{ number_format($order->computed_total, 0, ',', '.') }}₫
                                             </span>
                                         </td>
                                         <td>

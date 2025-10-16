@@ -81,6 +81,15 @@
                                     </label>
                                 </div>
                             </div>
+                            <!-- Tồn kho -->
+                            <div class="mb-3">
+                                <label for="stock" class="form-label">Tồn kho <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control @error('stock') is-invalid @enderror" 
+                                       id="stock" name="stock" value="{{ old('stock', $product->stock ?? 0) }}" min="0" required>
+                                @error('stock')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4">

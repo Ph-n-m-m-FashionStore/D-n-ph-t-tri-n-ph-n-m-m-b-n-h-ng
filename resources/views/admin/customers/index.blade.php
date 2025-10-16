@@ -88,6 +88,7 @@
                             <th>Khách hàng</th>
                             <th>Liên hệ</th>
                             <th>Số đơn hàng</th>
+                                <th>Đánh giá</th>
                             <th>Tổng chi tiêu</th>
                             <th>Trạng thái</th>
                             <th>Ngày đăng ký</th>
@@ -122,9 +123,16 @@
                                         {{ $customer->orders_count }} đơn
                                     </span>
                                 </td>
+                                    <td>
+                                        <span class="text-muted">{{ $customer->reviews_count ?? 0 }}</span>
+                                    </td>
                                 <td>
                                     <span class="fw-bold text-success">
-                                        {{ number_format($customer->total_spent ?? 0, 0, ',', '.') }}₫
+                                        {{-- Prefer computed total spent (sums order->computed_total) when available --}}
+                                        @php
+                                            $totalSpent = $customer->computed_total_spent ?? $customer->total_spent ?? 0;
+                                        @endphp
+                                        {{ number_format($totalSpent, 0, ',', '.') }}₫
                                     </span>
                                 </td>
                                 <td>
@@ -151,10 +159,10 @@
                                             <i class="fas fa-history"></i>
                                         </a>
                                         @if($customer->orders_count == 0)
-                                            <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                    onclick="confirmDelete({{ $customer->id }})" title="Xóa">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        data-customer-id="{{ $customer->id }}" onclick="confirmDeleteFromData(this)" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                         @endif
                                     </div>
                                     
@@ -189,7 +197,8 @@
 
 @section('scripts')
 <script>
-function confirmDelete(customerId) {
+function confirmDeleteFromData(el) {
+    var customerId = el.dataset.customerId;
     if (confirm('Bạn có chắc chắn muốn xóa khách hàng này? Hành động này không thể hoàn tác!')) {
         document.getElementById('delete-form-' + customerId).submit();
     }
