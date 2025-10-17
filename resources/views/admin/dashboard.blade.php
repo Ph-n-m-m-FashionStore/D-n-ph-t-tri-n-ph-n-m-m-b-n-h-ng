@@ -91,8 +91,8 @@
     </div>
 
     {{-- Embed dashboard chart data as JSON to keep JS free of Blade directives --}}
-    <script id="dashboardRevenueLabels" type="application/json">{!! json_encode(array_map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); }, $dailyRevenue)) !!}</script>
-    <script id="dashboardRevenueValues" type="application/json">{!! json_encode(array_map(function($d){ return $d['revenue']; }, $dailyRevenue)) !!}</script>
+    <script id="dashboardRevenueLabels" type="application/json">{!! json_encode(is_iterable($dailyRevenue) ? (\collect($dailyRevenue)->map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); })->values()->all()) : []) !!}</script>
+    <script id="dashboardRevenueValues" type="application/json">{!! json_encode(is_iterable($dailyRevenue) ? (\collect($dailyRevenue)->map(function($d){ return $d['revenue']; })->values()->all()) : []) !!}</script>
 
     <!-- Quick Stats -->
     <div class="col-xl-4 col-lg-5 mb-4">

@@ -52,8 +52,8 @@
     </div>
 
     {{-- Embed chart data as JSON so Blade isn't injected inside JS expressions --}}
-    <script id="revenueLabelsData" type="application/json">{!! json_encode(array_map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); }, $dailyRevenue)) !!}</script>
-    <script id="revenueValuesData" type="application/json">{!! json_encode(array_map(function($d){ return $d['revenue']; }, $dailyRevenue)) !!}</script>
+    <script id="revenueLabelsData" type="application/json">{!! json_encode(is_iterable($dailyRevenue) ? (\collect($dailyRevenue)->map(function($d){ return \Carbon\Carbon::parse($d['date'])->format('d/m'); })->values()->all()) : []) !!}</script>
+    <script id="revenueValuesData" type="application/json">{!! json_encode(is_iterable($dailyRevenue) ? (\collect($dailyRevenue)->map(function($d){ return $d['revenue']; })->values()->all()) : []) !!}</script>
 
     <!-- Top Products -->
     <div class="col-xl-4 col-lg-5 mb-4">
